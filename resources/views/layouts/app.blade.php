@@ -531,14 +531,23 @@
         .action-btn {
             background: transparent;
             border: none;
-            padding: 0.5rem;
+            padding: 0.375rem 0.75rem;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            font-weight: 500;
         }
 
         .action-btn:hover {
             background: var(--hover-bg);
+        }
+
+        .action-btn i {
+            font-size: 0.8125rem;
         }
 
         .action-btn-edit {
@@ -547,6 +556,10 @@
 
         .action-btn-delete {
             color: var(--danger-color);
+        }
+
+        .action-btn-view {
+            color: var(--secondary-color);
         }
 
         /* Pagination */
@@ -568,26 +581,34 @@
     <!-- Sidebar -->
     <x-sidebar :brand-name="$brandName" :brand-icon="$brandIcon">
         <x-sidebar-section title="Main">
-            <x-sidebar-link href="{{ route('dashboard') }}" icon="fas fa-home" :active="request()->routeIs('dashboard')">Dashboard</x-sidebar-link>
-            <x-sidebar-link href="{{ route('admin.users') }}" icon="fas fa-users" :active="request()->routeIs('admin.users')">Users</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.users') }}" icon="fas fa-users" :active="request()->routeIs('admin.users')">Users</x-sidebar-link>
         </x-sidebar-section>
 
         <x-sidebar-section title="Account">
-            <x-sidebar-link href="{{ route('admin.profile') }}" icon="fas fa-user-circle" :active="request()->routeIs('admin.profile')">Profile</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.profile') }}" icon="fas fa-user-circle" :active="request()->routeIs('admin.profile')">Profile</x-sidebar-link>
             <x-sidebar-link href="#settings" icon="fas fa-cog">Settings</x-sidebar-link>
         </x-sidebar-section>
 
-        <x-sidebar-section title="Developer">
-            <x-sidebar-link href="{{ route('admin.components') }}" icon="fas fa-cubes" :active="request()->routeIs('admin.components')">Components</x-sidebar-link>
-        </x-sidebar-section>
     </x-sidebar>
 
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Bar -->
+        @php
+            $authUser = null;
+            $authRole = 'Guest';
+            $guards = ['admin_toko' => 'Admin Toko', 'pemilik_toko' => 'Pemilik Toko', 'kasir' => 'Kasir', 'reseller' => 'Reseller', 'kurir' => 'Kurir'];
+            foreach ($guards as $guard => $label) {
+                if (Auth::guard($guard)->check()) {
+                    $authUser = Auth::guard($guard)->user();
+                    $authRole = $label;
+                    break;
+                }
+            }
+        @endphp
         <x-topbar
-            :user-name="Auth::user()?->name ?? 'Guest'"
-            user-role="Administrator"
+            :user-name="$authUser?->nama ?? 'Guest'"
+            :user-role="$authRole"
             :notification-count="0"
             :show-logout="true"
         />

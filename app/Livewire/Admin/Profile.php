@@ -11,13 +11,14 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-#[Title('Profile - AdminPro')]
+#[Title('Profile - Ayu Bakery')]
 class Profile extends Component
 {
     use WithFileUploads;
 
-    public string $name = '';
+    public string $nama = '';
     public string $email = '';
+    public string $no_hp = '';
     public string $current_password = '';
     public string $password = '';
     public string $password_confirmation = '';
@@ -27,23 +28,51 @@ class Profile extends Component
 
     public bool $showPasswordSection = false;
 
+    protected function getUser()
+    {
+        // Try each guard to find the logged-in user
+        $guards = ['admin_toko', 'pemilik_toko', 'kasir', 'reseller', 'kurir'];
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                return Auth::guard($guard)->user();
+            }
+        }
+        return null;
+    }
+
+    protected function getGuardName(): ?string
+    {
+        $guards = ['admin_toko', 'pemilik_toko', 'kasir', 'reseller', 'kurir'];
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                return $guard;
+            }
+        }
+        return null;
+    }
+
     public function mount(): void
     {
-        $user = Auth::user();
-        $this->name = $user->name;
+        $user = $this->getUser();
+        $this->nama = $user->nama;
         $this->email = $user->email;
-        $this->currentAvatar = $user->avatar;
+        $this->no_hp = $user->no_hp ?? '';
+        $this->currentAvatar = $user->foto;
     }
 
     protected function rules(): array
     {
+        $user = $this->getUser();
+        $table = $user->getTable();
+
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . Auth::id()],
+            'nama' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:' . $table . ',email,' . $user->id],
+            'no_hp' => ['nullable', 'string', 'max:20'],
         ];
 
         if ($this->showPasswordSection && $this->password) {
-            $rules['current_password'] = ['required', 'current_password'];
+            $rules['current_password'] = ['required'];
             $rules['password'] = ['required', 'confirmed', Password::defaults()];
         }
 
@@ -51,7 +80,7 @@ class Profile extends Component
     }
 
     protected $messages = [
-        'current_password.current_password' => 'Password saat ini tidak sesuai.',
+        'current_password.required' => 'Password saat ini harus diisi.',
         'avatar.image' => 'File harus berupa gambar.',
         'avatar.max' => 'Ukuran gambar maksimal 2MB.',
     ];
@@ -68,7 +97,7 @@ class Profile extends Component
     public function updatedAvatar(): void
     {
         $this->validate([
-            'avatar' => ['image', 'max:2048'], // 2MB max
+            'avatar' => ['image', 'max:2048'],
         ]);
     }
 
@@ -78,17 +107,17 @@ class Profile extends Component
             'avatar' => ['required', 'image', 'max:2048'],
         ]);
 
-        $user = Auth::user();
+        $user = $this->getUser();
 
         // Delete old avatar if exists
-        if ($user->avatar && Storage::exists($user->avatar)) {
-            Storage::delete($user->avatar);
+        if ($user->foto && Storage::exists($user->foto)) {
+            Storage::delete($user->foto);
         }
 
         // Store new avatar
         $path = $this->avatar->store('avatars', 'public');
 
-        $user->avatar = $path;
+        $user->foto = $path;
         $user->save();
 
         $this->currentAvatar = $path;
@@ -99,13 +128,13 @@ class Profile extends Component
 
     public function removeAvatar(): void
     {
-        $user = Auth::user();
+        $user = $this->getUser();
 
-        if ($user->avatar && Storage::exists($user->avatar)) {
-            Storage::delete($user->avatar);
+        if ($user->foto && Storage::exists($user->foto)) {
+            Storage::delete($user->foto);
         }
 
-        $user->avatar = null;
+        $user->foto = null;
         $user->save();
 
         $this->currentAvatar = null;
@@ -117,9 +146,10 @@ class Profile extends Component
     {
         $validated = $this->validate();
 
-        $user = Auth::user();
-        $user->name = $validated['name'];
+        $user = $this->getUser();
+        $user->nama = $validated['nama'];
         $user->email = $validated['email'];
+        $user->no_hp = $validated['no_hp'] ?? null;
         $user->save();
 
         session()->flash('success', 'Profile berhasil diperbarui.');
@@ -128,11 +158,18 @@ class Profile extends Component
     public function updatePassword(): void
     {
         $this->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => ['required'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user = Auth::user();
+        $user = $this->getUser();
+
+        // Verify current password manually
+        if (!Hash::check($this->current_password, $user->password)) {
+            $this->addError('current_password', 'Password saat ini tidak sesuai.');
+            return;
+        }
+
         $user->password = Hash::make($this->password);
         $user->save();
 

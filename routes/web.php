@@ -5,6 +5,7 @@ use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\Profile;
 use App\Livewire\Admin\ComponentDocs;
+use App\Livewire\AdminToko\ProdukManagement;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\Guest\LandingPage;
@@ -17,10 +18,9 @@ Route::get('/', LandingPage::class)->name('home');
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
 
-Route::prefix('admin')->middleware('auth')->group(function () {
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
-    Route::get('/users', UserManagement::class)->name('admin.users');
-    Route::get('/profile', Profile::class)->name('admin.profile');
-    Route::get('/components', ComponentDocs::class)->name('admin.components');
+Route::prefix('admintoko')->middleware('auth:admin_toko,pemilik_toko,kasir,reseller,kurir')->group(function () {
+    Route::get('/users', UserManagement::class)->name('admintoko.users');
+    Route::get('/profile', Profile::class)->name('admintoko.profile');
+    Route::get('/produk', ProdukManagement::class)->name('admintoko.produk');
     Route::post('/logout', [LogoutController::class, '__invoke'])->name('logout');
 });

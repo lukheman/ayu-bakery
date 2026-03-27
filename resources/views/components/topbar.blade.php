@@ -45,9 +45,15 @@
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">{{ $notificationCount }}</span>
             @endif
         </button>
-        <a href="{{ route('admin.profile') }}" class="d-flex align-items-center gap-2 text-decoration-none" title="Go to Profile">
-            @if(Auth::user()?->hasAvatar())
-                <img src="{{ Auth::user()->avatarUrl() }}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+        <a href="{{ route('admintoko.profile') }}" class="d-flex align-items-center gap-2 text-decoration-none" title="Go to Profile">
+            @php
+                $authUserForAvatar = null;
+                foreach (['admin_toko', 'pemilik_toko', 'kasir', 'reseller', 'kurir'] as $g) {
+                    if (Auth::guard($g)->check()) { $authUserForAvatar = Auth::guard($g)->user(); break; }
+                }
+            @endphp
+            @if($authUserForAvatar?->foto)
+                <img src="{{ Storage::url($authUserForAvatar->foto) }}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
             @else
                 <div class="user-avatar">{{ $initials }}</div>
             @endif

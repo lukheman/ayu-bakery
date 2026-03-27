@@ -6,13 +6,15 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Rule;
-
 use Livewire\Component;
 
 #[Layout('layouts.guest')]
-#[Title('Login - AdminPro')]
+#[Title('Login - Ayu Bakery')]
 class Login extends Component
 {
+    #[Rule(['required'])]
+    public string $role = '';
+
     #[Rule(['required', 'email'])]
     public string $email = '';
 
@@ -21,13 +23,49 @@ class Login extends Component
 
     public bool $remember = false;
 
+    /**
+     * Map role to guard name
+     */
+    protected array $guardMap = [
+        'admin_toko' => 'admin_toko',
+        'pemilik_toko' => 'pemilik_toko',
+        'kasir' => 'kasir',
+        'reseller' => 'reseller',
+        'kurir' => 'kurir',
+    ];
+
+    /**
+     * Role labels for the dropdown
+     */
+    public function getRoleOptionsProperty(): array
+    {
+        return [
+            'admin_toko' => 'Admin Toko',
+            'pemilik_toko' => 'Pemilik Toko',
+            'kasir' => 'Kasir',
+            'reseller' => 'Reseller',
+            'kurir' => 'Kurir',
+        ];
+    }
+
     public function submit()
     {
-        $credentials = $this->validate();
+        $this->validate([
+            'role' => ['required', 'in:' . implode(',', array_keys($this->guardMap))],
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        if (Auth::attempt($credentials, $this->remember)) {
+        $guard = $this->guardMap[$this->role];
+
+        if (
+            Auth::guard($guard)->attempt(
+                ['email' => $this->email, 'password' => $this->password],
+                $this->remember
+            )
+        ) {
             session()->regenerate();
-            return redirect()->to(route('dashboard'));
+            return redirect()->to(route('admintoko.produk'));
         }
 
         $this->addError('email', __('auth.failed'));

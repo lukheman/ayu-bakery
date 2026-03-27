@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
+use App\Models\Reseller;
+use App\Models\KeranjangBelanja;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -12,26 +13,31 @@ use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 #[Layout('layouts.guest')]
-#[Title('Register - AdminPro')]
+#[Title('Register - Ayu Bakery')]
 class Register extends Component
 {
     #[Rule(['required', 'string', 'max:255'])]
-    public string $name = '';
+    public string $nama = '';
 
-    #[Rule(['required', 'email', 'max:255', 'unique:users,email'])]
+    #[Rule(['required', 'email', 'max:255', 'unique:reseller,email'])]
     public string $email = '';
 
     public string $password = '';
     public string $password_confirmation = '';
+
+    public string $no_hp = '';
+    public string $alamat = '';
 
     public bool $agree_terms = false;
 
     protected function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'nama' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:reseller,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'no_hp' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string', 'max:500'],
             'agree_terms' => ['accepted'],
         ];
     }
@@ -44,13 +50,20 @@ class Register extends Component
     {
         $validated = $this->validate();
 
-        $user = User::create([
-            'name' => $validated['name'],
+        $reseller = Reseller::create([
+            'nama' => $validated['nama'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'no_hp' => $validated['no_hp'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
         ]);
 
-        Auth::login($user);
+        // Create shopping cart for the new reseller
+        KeranjangBelanja::create([
+            'id_reseller' => $reseller->id,
+        ]);
+
+        Auth::guard('reseller')->login($reseller);
 
         session()->regenerate();
 

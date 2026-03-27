@@ -3,14 +3,29 @@
         <!-- Brand Logo -->
         <div class="brand-logo">
             <div class="icon-wrapper">
-                <i class="fas fa-layer-group"></i>
+                <i class="fas fa-bread-slice"></i>
             </div>
-            <h1>Welcome Back</h1>
-            <p>Sign in to continue to AdminPro</p>
+            <h1>Selamat Datang</h1>
+            <p>Masuk ke sistem Ayu Bakery</p>
         </div>
 
         <!-- Login Form -->
         <form wire:submit="submit">
+            <!-- Role Selector -->
+            <div class="form-floating position-relative mb-3">
+                <i class="fas fa-user-tag input-icon"></i>
+                <select wire:model="role" class="form-control @error('role') is-invalid @enderror" id="role"
+                    style="padding-left: 2.5rem;">
+                    <option value="">-- Pilih Role --</option>
+                    @foreach($this->roleOptions as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <label for="role">Role</label>
+                @error('role')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
             <!-- Email Field -->
             <div class="form-floating position-relative">
                 <i class="fas fa-envelope input-icon"></i>

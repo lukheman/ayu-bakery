@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\User;
+use App\Models\AdminToko;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
@@ -21,8 +21,9 @@ class UserManagement extends Component
     public string $search = '';
 
     // Form fields
-    public string $name = '';
+    public string $nama = '';
     public string $email = '';
+    public string $no_hp = '';
     public string $password = '';
     public string $password_confirmation = '';
 
@@ -35,17 +36,18 @@ class UserManagement extends Component
     protected function rules(): array
     {
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
+            'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
+            'no_hp' => ['nullable', 'string', 'max:20'],
         ];
 
         if ($this->editingUserId) {
-            $rules['email'][] = 'unique:users,email,' . $this->editingUserId;
+            $rules['email'][] = 'unique:admin_toko,email,' . $this->editingUserId;
             if ($this->password) {
                 $rules['password'] = ['confirmed', Password::defaults()];
             }
         } else {
-            $rules['email'][] = 'unique:users,email';
+            $rules['email'][] = 'unique:admin_toko,email';
             $rules['password'] = ['required', 'confirmed', Password::defaults()];
         }
 
@@ -66,10 +68,11 @@ class UserManagement extends Component
 
     public function openEditModal(int $userId): void
     {
-        $user = User::findOrFail($userId);
+        $user = AdminToko::findOrFail($userId);
         $this->editingUserId = $userId;
-        $this->name = $user->name;
+        $this->nama = $user->nama;
         $this->email = $user->email;
+        $this->no_hp = $user->no_hp ?? '';
         $this->password = '';
         $this->password_confirmation = '';
         $this->showModal = true;
@@ -80,23 +83,25 @@ class UserManagement extends Component
         $validated = $this->validate();
 
         if ($this->editingUserId) {
-            $user = User::findOrFail($this->editingUserId);
-            $user->name = $validated['name'];
+            $user = AdminToko::findOrFail($this->editingUserId);
+            $user->nama = $validated['nama'];
             $user->email = $validated['email'];
+            $user->no_hp = $validated['no_hp'] ?? null;
 
             if (!empty($this->password)) {
                 $user->password = Hash::make($this->password);
             }
 
             $user->save();
-            session()->flash('success', 'User updated successfully.');
+            session()->flash('success', 'Admin berhasil diperbarui.');
         } else {
-            User::create([
-                'name' => $validated['name'],
+            AdminToko::create([
+                'nama' => $validated['nama'],
                 'email' => $validated['email'],
+                'no_hp' => $validated['no_hp'] ?? null,
                 'password' => Hash::make($validated['password']),
             ]);
-            session()->flash('success', 'User created successfully.');
+            session()->flash('success', 'Admin berhasil ditambahkan.');
         }
 
         $this->closeModal();
@@ -118,8 +123,8 @@ class UserManagement extends Component
     public function deleteUser(): void
     {
         if ($this->deletingUserId) {
-            User::destroy($this->deletingUserId);
-            session()->flash('success', 'User deleted successfully.');
+            AdminToko::destroy($this->deletingUserId);
+            session()->flash('success', 'Admin berhasil dihapus.');
         }
 
         $this->showDeleteModal = false;
@@ -134,8 +139,9 @@ class UserManagement extends Component
 
     protected function resetForm(): void
     {
-        $this->name = '';
+        $this->nama = '';
         $this->email = '';
+        $this->no_hp = '';
         $this->password = '';
         $this->password_confirmation = '';
         $this->editingUserId = null;
@@ -143,9 +149,9 @@ class UserManagement extends Component
 
     public function render()
     {
-        $users = User::query()
+        $users = AdminToko::query()
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
+                $query->where('nama', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%');
             })
             ->orderBy('created_at', 'desc')

@@ -1,9 +1,23 @@
 <div>
+    @php
+        $profileUser = null;
+        $profileRole = '';
+        $profileGuards = ['admin_toko' => 'Admin Toko', 'pemilik_toko' => 'Pemilik Toko', 'kasir' => 'Kasir', 'reseller' => 'Reseller', 'kurir' => 'Kurir'];
+        foreach ($profileGuards as $g => $l) {
+            if (Auth::guard($g)->check()) {
+                $profileUser = Auth::guard($g)->user();
+                $profileRole = $l;
+                break;
+            }
+        }
+        $profileInitials = collect(explode(' ', $profileUser?->nama ?? ''))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->implode('');
+    @endphp
+
     {{-- Page Header --}}
     <x-page-header title="Profile" subtitle="Kelola informasi akun Anda">
         <x-slot:actions>
             <x-badge variant="success" icon="fas fa-user-check">
-                {{ Auth::user()->email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi' }}
+                {{ $profileRole }}
             </x-badge>
         </x-slot:actions>
     </x-page-header>
@@ -32,25 +46,27 @@
                             style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--primary-color);">
                     @else
                         <div class="user-avatar mx-auto" style="width: 120px; height: 120px; font-size: 3rem;">
-                            {{ Auth::user()->initials() }}
+                            {{ $profileInitials }}
                         </div>
                     @endif
                 </div>
 
-                <h4 style="color: var(--text-primary); font-weight: 600;">{{ Auth::user()->name }}</h4>
-                <p class="text-muted mb-3">{{ Auth::user()->email }}</p>
-                <x-badge variant="primary" icon="fas fa-user-shield">Administrator</x-badge>
+                <h4 style="color: var(--text-primary); font-weight: 600;">{{ $profileUser?->nama }}</h4>
+                <p class="text-muted mb-3">{{ $profileUser?->email }}</p>
+                <x-badge variant="primary" icon="fas fa-user-shield">{{ $profileRole }}</x-badge>
 
                 <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
 
                 <div class="text-start">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Bergabung</span>
-                        <span style="color: var(--text-primary);">{{ Auth::user()->created_at->format('d M Y') }}</span>
+                        <span
+                            style="color: var(--text-primary);">{{ $profileUser?->created_at?->format('d M Y') }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Terakhir diperbarui</span>
-                        <span style="color: var(--text-primary);">{{ Auth::user()->updated_at->diffForHumans() }}</span>
+                        <span
+                            style="color: var(--text-primary);">{{ $profileUser?->updated_at?->diffForHumans() }}</span>
                     </div>
                 </div>
             </div>
@@ -76,7 +92,7 @@
                                 style="width: 80px; height: 80px; object-fit: cover; border: 3px solid var(--border-color);">
                         @else
                             <div class="user-avatar" style="width: 80px; height: 80px; font-size: 2rem;">
-                                {{ Auth::user()->initials() }}
+                                {{ $profileInitials }}
                             </div>
                         @endif
                     </div>
@@ -134,11 +150,11 @@
                 <form wire:submit="updateProfile">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="name" class="form-label">Nama Lengkap <span
+                            <label for="nama" class="form-label">Nama Lengkap <span
                                     style="color: var(--danger-color);">*</span></label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                wire:model="name" placeholder="Masukkan nama lengkap">
-                            @error('name')
+                            <input type="text" class="form-control @error('nama') is-invalid @enderror" id="nama"
+                                wire:model="nama" placeholder="Masukkan nama lengkap">
+                            @error('nama')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
