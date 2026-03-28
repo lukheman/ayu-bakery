@@ -16,7 +16,6 @@ class Persediaan extends Model
     protected $fillable = [
         'id_produk',
         'jumlah',
-        'unit',
         'tgl_produksi',
         'tgl_exp',
         'sisa_hari',

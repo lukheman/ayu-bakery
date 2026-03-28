@@ -65,7 +65,6 @@ class ProdukManagement extends Component
         'nama_produk.required' => 'Nama produk harus diisi.',
         'kode_produk.required' => 'Kode produk harus diisi.',
         'kode_produk.unique' => 'Kode produk sudah digunakan.',
-        'harga_beli.required' => 'Harga beli harus diisi.',
         'harga_jual.required' => 'Harga jual harus diisi.',
         'harga_jual_satuan.required' => 'Harga jual satuan harus diisi.',
         'gambar.image' => 'File harus berupa gambar.',
@@ -119,7 +118,7 @@ class ProdukManagement extends Component
             'unit_besar' => $validated['unit_besar'] ?: null,
             'unit_kecil' => $validated['unit_kecil'] ?: null,
             'tingkat_konversi' => $validated['tingkat_konversi'],
-            'deskripsi' => $validated['deskripsi'] ?: null,
+            // 'deskripsi' => $validated['deskripsi'] ?: null,
         ];
 
         // Handle image upload

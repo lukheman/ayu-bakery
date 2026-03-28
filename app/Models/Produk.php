@@ -49,4 +49,31 @@ class Produk extends Model
     {
         return $this->hasMany(ItemPesanan::class, 'id_produk');
     }
+
+    public function getTotalStokAttribute()
+    {
+        return $this->persediaan_sum_jumlah ?? 0;
+    }
+
+    public function getStokTextAttribute()
+    {
+        $totalStok = $this->total_stok;
+        $konversi = max(1, $this->tingkat_konversi ?? 1);
+        $stokBesar = floor($totalStok / $konversi);
+        $stokKecil = $totalStok % $konversi;
+
+        $stokText = '';
+        if ($this->unit_besar && $konversi > 1) {
+            if ($stokBesar > 0)
+                $stokText .= $stokBesar . ' ' . $this->unit_besar . ' ';
+            if ($stokKecil > 0)
+                $stokText .= $stokKecil . ' ' . ($this->unit_kecil ?? 'pcs');
+            if ($stokBesar == 0 && $stokKecil == 0)
+                $stokText = '0 ' . ($this->unit_kecil ?? 'pcs');
+        } else {
+            $stokText = $totalStok . ' ' . ($this->unit_kecil ?? 'pcs');
+        }
+
+        return trim($stokText);
+    }
 }

@@ -163,18 +163,7 @@
                         {{-- Right Column --}}
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label for="harga_beli" class="form-label">Harga Beli <span style="color: var(--danger-color);">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">Rp</span>
-                                        <input type="number" class="form-control @error('harga_beli') is-invalid @enderror" id="harga_beli"
-                                            wire:model="harga_beli" min="0">
-                                    </div>
-                                    @error('harga_beli')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-6 mb-3">
+                                <div class="col-12 mb-3">
                                     <label for="harga_jual" class="form-label">Harga Jual <span style="color: var(--danger-color);">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">Rp</span>

@@ -23,7 +23,6 @@ class PersediaanFactory extends Factory
         return [
             'id_produk' => Produk::factory(),
             'jumlah' => fake()->numberBetween(10, 200),
-            'unit' => fake()->randomElement(['Pcs', 'Dus', 'Box', 'Loyang', 'Toples']),
             'tgl_produksi' => $tglProduksi,
             'tgl_exp' => $tglExp,
             'sisa_hari' => max(0, $sisaHari),

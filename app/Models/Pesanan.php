@@ -19,6 +19,7 @@ class Pesanan extends Model
         'id_keranjang',
         'status',
         'catatan',
+        'kode_konfirmasi',
     ];
 
     public function reseller(): BelongsTo

@@ -6,28 +6,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MutasiStok extends Model
+class ItemPenjualan extends Model
 {
     use HasFactory;
 
-    protected $table = 'mutasi_stok';
+    protected $table = 'item_penjualan';
 
     protected $fillable = [
+        'id_penjualan',
         'id_produk',
         'id_persediaan',
+        'nama_produk',
+        'harga',
         'jumlah',
-        'unit',
-        'jenis',
-        'keterangan',
-        'tanggal',
+        'subtotal',
     ];
 
-    protected function casts(): array
+    public function penjualan(): BelongsTo
     {
-        return [
-            'tanggal' => 'date',
-            'jenis' => \App\Enums\JenisMutasi::class,
-        ];
+        return $this->belongsTo(PenjualanKasir::class, 'id_penjualan');
     }
 
     public function produk(): BelongsTo

@@ -581,7 +581,10 @@
     <!-- Sidebar -->
     <x-sidebar :brand-name="$brandName" :brand-icon="$brandIcon">
         <x-sidebar-section title="Main">
-            <x-sidebar-link href="{{ route('admintoko.users') }}" icon="fas fa-users" :active="request()->routeIs('admin.users')">Users</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.users') }}" icon="fas fa-users" :active="request()->routeIs('admintoko.users')">Pengguna</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.produk') }}" icon="fas fa-box" :active="request()->routeIs('admintoko.produk')">Produk</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.persediaan') }}" icon="fas fa-boxes" :active="request()->routeIs('admintoko.persediaan')">Persediaan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.pesanan') }}" icon="fas fa-shopping-cart" :active="request()->routeIs('admintoko.pesanan')">Pesanan</x-sidebar-link>
         </x-sidebar-section>
 
         <x-sidebar-section title="Account">

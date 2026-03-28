@@ -65,7 +65,13 @@ class Login extends Component
             )
         ) {
             session()->regenerate();
-            return redirect()->to(route('admintoko.produk'));
+
+            return match ($this->role) {
+                'reseller' => redirect()->to(route('reseller.katalog')),
+                'kurir' => redirect()->to(route('kurir.pesanan')),
+                'kasir' => redirect()->to(route('kasir.pos')),
+                default => redirect()->to(route('admintoko.produk')),
+            };
         }
 
         $this->addError('email', __('auth.failed'));

@@ -10,6 +10,11 @@ class ResellerSeeder extends Seeder
 {
     public function run(): void
     {
+        Reseller::factory()->create([
+            'nama' => 'Reseller',
+            'email' => 'reseller1@gmail.com',
+            'password' => 'password123',
+        ]);
         $resellers = Reseller::factory(5)->create();
 
         // Create a shopping cart for each reseller

@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('id_produk')->constrained('produk')->cascadeOnDelete();
             $table->integer('jumlah')->default(0);
-            $table->string('unit')->nullable();
             $table->date('tgl_produksi')->nullable();
             $table->date('tgl_exp')->nullable();
             $table->integer('sisa_hari')->default(0);
