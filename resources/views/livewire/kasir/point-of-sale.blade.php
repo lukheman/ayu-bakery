@@ -318,10 +318,10 @@
 
                 {{-- Actions --}}
                 <div style="padding: 0.75rem 1.5rem 1.25rem; display: flex; gap: 0.5rem;">
-                    <button onclick="window.print()"
-                        style="flex: 1; padding: 0.6rem; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                    <a href="{{ route('kasir.pos.cetak', $receiptData['nomor_struk']) }}" target="_blank"
+                        style="flex: 1; text-align: center; text-decoration: none; padding: 0.6rem; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
                         <i class="fas fa-print me-1"></i> Cetak
-                    </button>
+                    </a>
                     <button wire:click="closeReceipt"
                         style="flex: 1; padding: 0.6rem; background: #f1f5f9; color: #1e293b; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
                         Transaksi Baru

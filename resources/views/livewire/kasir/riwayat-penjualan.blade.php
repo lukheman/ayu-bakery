@@ -81,8 +81,8 @@
                             @php $metode = $penjualan->metode_pembayaran; @endphp
                             <span
                                 style="font-size: 0.75rem; padding: 3px 8px; border-radius: 50px; font-weight: 600;
-                                        background: {{ $metode->value === 'tunai' ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)' }};
-                                        color: {{ $metode->value === 'tunai' ? 'var(--pos-success)' : 'var(--pos-primary-light)' }};">
+                                            background: {{ $metode->value === 'tunai' ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)' }};
+                                            color: {{ $metode->value === 'tunai' ? 'var(--pos-success)' : 'var(--pos-primary-light)' }};">
                                 {{ $metode->label() }}
                             </span>
                         </td>
@@ -165,10 +165,10 @@
                 </div>
 
                 <div style="padding: 0.75rem 1.5rem 1.25rem; display: flex; gap: 0.5rem;">
-                    <button onclick="window.print()"
-                        style="flex: 1; padding: 0.5rem; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                    <a href="{{ route('kasir.pos.cetak', $detailPenjualan->nomor_struk) }}" target="_blank"
+                        style="flex: 1; text-align: center; text-decoration: none; padding: 0.5rem; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
                         <i class="fas fa-print me-1"></i> Cetak
-                    </button>
+                    </a>
                     <button wire:click="closeDetail"
                         style="flex: 1; padding: 0.5rem; background: #f1f5f9; color: #1e293b; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
                         Tutup

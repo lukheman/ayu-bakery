@@ -3,6 +3,10 @@
 namespace App\Livewire\Admin;
 
 use App\Models\AdminToko;
+use App\Models\PemilikToko;
+use App\Models\Kasir;
+use App\Models\Kurir;
+use App\Models\Reseller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
@@ -16,6 +20,9 @@ class UserManagement extends Component
 {
     use WithPagination;
 
+    #[Url(as: 'role')]
+    public string $role = 'admin_toko';
+
     // Search
     #[Url(as: 'q')]
     public string $search = '';
@@ -24,6 +31,7 @@ class UserManagement extends Component
     public string $nama = '';
     public string $email = '';
     public string $no_hp = '';
+    public string $alamat = '';
     public string $password = '';
     public string $password_confirmation = '';
 
@@ -33,6 +41,30 @@ class UserManagement extends Component
     public bool $showDeleteModal = false;
     public ?int $deletingUserId = null;
 
+    protected array $models = [
+        'admin_toko' => AdminToko::class,
+        'pemilik_toko' => PemilikToko::class,
+        'kasir' => Kasir::class,
+        'kurir' => Kurir::class,
+        'reseller' => Reseller::class,
+    ];
+
+    public function updatedRole(): void
+    {
+        $this->resetPage();
+        $this->resetSearch();
+    }
+
+    public function resetSearch(): void
+    {
+        $this->search = '';
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     protected function rules(): array
     {
         $rules = [
@@ -41,22 +73,23 @@ class UserManagement extends Component
             'no_hp' => ['nullable', 'string', 'max:20'],
         ];
 
+        if (in_array($this->role, ['admin_toko', 'reseller'])) {
+            $rules['alamat'] = ['nullable', 'string'];
+        }
+
+        $table = $this->role; // admin_toko, pemilik_toko, kasir, kurir, reseller
+
         if ($this->editingUserId) {
-            $rules['email'][] = 'unique:admin_toko,email,' . $this->editingUserId;
+            $rules['email'][] = "unique:{$table},email," . $this->editingUserId;
             if ($this->password) {
                 $rules['password'] = ['confirmed', Password::defaults()];
             }
         } else {
-            $rules['email'][] = 'unique:admin_toko,email';
+            $rules['email'][] = "unique:{$table},email";
             $rules['password'] = ['required', 'confirmed', Password::defaults()];
         }
 
         return $rules;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function openCreateModal(): void
@@ -68,11 +101,20 @@ class UserManagement extends Component
 
     public function openEditModal(int $userId): void
     {
-        $user = AdminToko::findOrFail($userId);
+        $modelClass = $this->models[$this->role];
+        $user = $modelClass::findOrFail($userId);
+
         $this->editingUserId = $userId;
         $this->nama = $user->nama;
         $this->email = $user->email;
         $this->no_hp = $user->no_hp ?? '';
+
+        if (in_array($this->role, ['admin_toko', 'reseller'])) {
+            $this->alamat = $user->alamat ?? '';
+        } else {
+            $this->alamat = '';
+        }
+
         $this->password = '';
         $this->password_confirmation = '';
         $this->showModal = true;
@@ -81,27 +123,31 @@ class UserManagement extends Component
     public function save(): void
     {
         $validated = $this->validate();
+        $modelClass = $this->models[$this->role];
+
+        $data = [
+            'nama' => $validated['nama'],
+            'email' => $validated['email'],
+            'no_hp' => $validated['no_hp'] ?? null,
+        ];
+
+        if (in_array($this->role, ['admin_toko', 'reseller'])) {
+            $data['alamat'] = $validated['alamat'] ?? null;
+        }
 
         if ($this->editingUserId) {
-            $user = AdminToko::findOrFail($this->editingUserId);
-            $user->nama = $validated['nama'];
-            $user->email = $validated['email'];
-            $user->no_hp = $validated['no_hp'] ?? null;
+            $user = $modelClass::findOrFail($this->editingUserId);
 
             if (!empty($this->password)) {
-                $user->password = Hash::make($this->password);
+                $data['password'] = Hash::make($this->password);
             }
 
-            $user->save();
-            session()->flash('success', 'Admin berhasil diperbarui.');
+            $user->update($data);
+            session()->flash('success', 'Pengguna berhasil diperbarui.');
         } else {
-            AdminToko::create([
-                'nama' => $validated['nama'],
-                'email' => $validated['email'],
-                'no_hp' => $validated['no_hp'] ?? null,
-                'password' => Hash::make($validated['password']),
-            ]);
-            session()->flash('success', 'Admin berhasil ditambahkan.');
+            $data['password'] = Hash::make($this->password);
+            $modelClass::create($data);
+            session()->flash('success', 'Pengguna berhasil ditambahkan.');
         }
 
         $this->closeModal();
@@ -123,8 +169,9 @@ class UserManagement extends Component
     public function deleteUser(): void
     {
         if ($this->deletingUserId) {
-            AdminToko::destroy($this->deletingUserId);
-            session()->flash('success', 'Admin berhasil dihapus.');
+            $modelClass = $this->models[$this->role];
+            $modelClass::destroy($this->deletingUserId);
+            session()->flash('success', 'Pengguna berhasil dihapus.');
         }
 
         $this->showDeleteModal = false;
@@ -142,6 +189,7 @@ class UserManagement extends Component
         $this->nama = '';
         $this->email = '';
         $this->no_hp = '';
+        $this->alamat = '';
         $this->password = '';
         $this->password_confirmation = '';
         $this->editingUserId = null;
@@ -149,7 +197,9 @@ class UserManagement extends Component
 
     public function render()
     {
-        $users = AdminToko::query()
+        $modelClass = $this->models[$this->role];
+
+        $users = $modelClass::query()
             ->when($this->search, function ($query) {
                 $query->where('nama', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%');

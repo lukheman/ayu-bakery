@@ -581,10 +581,23 @@
     <!-- Sidebar -->
     <x-sidebar :brand-name="$brandName" :brand-icon="$brandIcon">
         <x-sidebar-section title="Main">
+
+        
+        <!-- menu untuk guard admin toko -->
+        @auth('admin_toko')
             <x-sidebar-link href="{{ route('admintoko.users') }}" icon="fas fa-users" :active="request()->routeIs('admintoko.users')">Pengguna</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.produk') }}" icon="fas fa-box" :active="request()->routeIs('admintoko.produk')">Produk</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.persediaan') }}" icon="fas fa-boxes" :active="request()->routeIs('admintoko.persediaan')">Persediaan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.pesanan') }}" icon="fas fa-shopping-cart" :active="request()->routeIs('admintoko.pesanan')">Pesanan</x-sidebar-link>
+        @endauth
+
+        <!-- menu untuk guard pemilik toko -->
+        @auth('pemilik_toko')
+            <x-sidebar-link href="{{ route('admintoko.laporan-persediaan') }}" icon="fas fa-file-alt" :active="request()->routeIs('admintoko.laporan-persediaan')">Laporan Persediaan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.laporan-penjualan') }}" icon="fas fa-chart-bar" :active="request()->routeIs('admintoko.laporan-penjualan')">Laporan Penjualan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.laporan-pesanan') }}" icon="fas fa-clipboard-list" :active="request()->routeIs('admintoko.laporan-pesanan')">Laporan Pesanan</x-sidebar-link>
+        @endauth
+
         </x-sidebar-section>
 
         <x-sidebar-section title="Account">

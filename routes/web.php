@@ -8,6 +8,9 @@ use App\Livewire\Admin\ComponentDocs;
 use App\Livewire\AdminToko\PersediaanManagement;
 use App\Livewire\AdminToko\PesananManagement;
 use App\Livewire\AdminToko\ProdukManagement;
+use App\Livewire\PemilikToko\LaporanPersediaan;
+use App\Livewire\PemilikToko\LaporanPenjualan;
+use App\Livewire\PemilikToko\LaporanPesanan;
 use App\Livewire\Reseller\Katalog;
 use App\Livewire\Reseller\Keranjang;
 use App\Livewire\Reseller\PesananSaya;
@@ -35,6 +38,9 @@ Route::prefix('admintoko')->middleware('auth:admin_toko,pemilik_toko,kasir,resel
     Route::get('/produk', ProdukManagement::class)->name('admintoko.produk');
     Route::get('/persediaan', PersediaanManagement::class)->name('admintoko.persediaan');
     Route::get('/pesanan', PesananManagement::class)->name('admintoko.pesanan');
+    Route::get('/laporan-persediaan', LaporanPersediaan::class)->name('admintoko.laporan-persediaan');
+    Route::get('/laporan-penjualan', LaporanPenjualan::class)->name('admintoko.laporan-penjualan');
+    Route::get('/laporan-pesanan', LaporanPesanan::class)->name('admintoko.laporan-pesanan');
     Route::get('/profile', \App\Livewire\Admin\Profile::class)->name('admintoko.profile');
     Route::post('/logout', [LogoutController::class, '__invoke'])->name('logout');
 });
@@ -54,6 +60,7 @@ Route::prefix('kurir')->middleware('auth:kurir')->group(function () {
 
 Route::prefix('kasir')->middleware('auth:kasir')->group(function () {
     Route::get('/pos', PointOfSale::class)->name('kasir.pos');
+    Route::get('/pos/cetak/{nomor_struk}', [\App\Http\Controllers\Kasir\CetakStrukController::class, '__invoke'])->name('kasir.pos.cetak');
     Route::get('/riwayat', RiwayatPenjualan::class)->name('kasir.riwayat');
     Route::get('/profil', KasirProfil::class)->name('kasir.profil');
 });
