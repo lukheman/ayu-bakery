@@ -14,12 +14,12 @@
     @livewireStyles
     <style>
         :root {
-            --pos-primary: #6366f1;
-            --pos-primary-light: #818cf8;
+            --pos-primary: #e11d48;
+            --pos-primary-light: #fb7185;
             --pos-success: #10b981;
             --pos-warning: #f59e0b;
             --pos-danger: #ef4444;
-            --pos-accent: #0ea5e9;
+            --pos-accent: #f59e0b;
 
             /* Light theme (default override to dark for POS) */
             --pos-bg: #f1f5f9;
@@ -113,7 +113,7 @@
         }
         .form-control:focus, .form-select:focus {
             border-color: var(--pos-primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+            box-shadow: 0 0 0 3px rgba(225,29,72,0.2);
             background: var(--pos-surface-2);
             color: var(--pos-text);
         }
@@ -130,7 +130,7 @@
     <nav class="pos-topbar">
         <div class="d-flex align-items-center gap-3">
             <span class="pos-brand"><i class="fas fa-birthday-cake me-1"></i> Ayu Bakery</span>
-            <span style="color: var(--pos-text-muted); font-size: 0.75rem; padding: 2px 8px; background: rgba(99,102,241,0.15); border-radius: 50px; font-weight: 600; color: var(--pos-primary-light);">POS</span>
+            <span style="color: var(--pos-text-muted); font-size: 0.75rem; padding: 2px 8px; background: rgba(225,29,72,0.15); border-radius: 50px; font-weight: 600; color: var(--pos-primary-light);">POS</span>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('kasir.pos') }}" class="pos-topbar-link {{ request()->routeIs('kasir.pos') ? 'active' : '' }}">

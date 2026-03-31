@@ -18,10 +18,10 @@
     @livewireStyles
     <style>
         :root {
-            --primary-color: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary-color: #0ea5e9;
+            --primary-color: #e11d48;
+            --primary-dark: #be123c;
+            --primary-light: #fb7185;
+            --secondary-color: #f59e0b;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
@@ -186,7 +186,7 @@
             background: var(--input-bg);
             border-color: var(--primary-color);
             color: var(--text-primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
         }
 
         .form-control::placeholder { color: var(--text-muted); }

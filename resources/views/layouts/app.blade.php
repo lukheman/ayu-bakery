@@ -1,7 +1,7 @@
 @props([
-    'title' => 'Modern Admin Dashboard',
-    'brandName' => 'AdminPro',
-    'brandIcon' => 'fas fa-layer-group'
+    'title' => 'Ayu Bakery Dashboard',
+    'brandName' => 'Ayu Bakery',
+    'brandIcon' => 'fas fa-birthday-cake'
 ])
 
 <!DOCTYPE html>
@@ -20,10 +20,10 @@
         :root {
             --sidebar-width: 280px;
             --topbar-height: 70px;
-            --primary-color: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary-color: #0ea5e9;
+            --primary-color: #e11d48;
+            --primary-dark: #be123c;
+            --primary-light: #fb7185;
+            --secondary-color: #f59e0b;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
@@ -283,7 +283,7 @@
         .btn-primary-modern:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.4);
         }
 
         .alert-modern {
@@ -495,7 +495,7 @@
             background: var(--input-bg);
             border-color: var(--primary-color);
             color: var(--text-primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
         }
 
         .form-control::placeholder {
@@ -589,6 +589,7 @@
             <x-sidebar-link href="{{ route('admintoko.produk') }}" icon="fas fa-box" :active="request()->routeIs('admintoko.produk')">Produk</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.persediaan') }}" icon="fas fa-boxes" :active="request()->routeIs('admintoko.persediaan')">Persediaan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.pesanan') }}" icon="fas fa-shopping-cart" :active="request()->routeIs('admintoko.pesanan')">Pesanan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.prediksi-penjualan') }}" icon="fas fa-chart-line" :active="request()->routeIs('admintoko.prediksi-penjualan')">Prediksi Penjualan</x-sidebar-link>
         @endauth
 
         <!-- menu untuk guard pemilik toko -->
@@ -596,7 +597,6 @@
             <x-sidebar-link href="{{ route('admintoko.laporan-persediaan') }}" icon="fas fa-file-alt" :active="request()->routeIs('admintoko.laporan-persediaan')">Laporan Persediaan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.laporan-penjualan') }}" icon="fas fa-chart-bar" :active="request()->routeIs('admintoko.laporan-penjualan')">Laporan Penjualan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.laporan-pesanan') }}" icon="fas fa-clipboard-list" :active="request()->routeIs('admintoko.laporan-pesanan')">Laporan Pesanan</x-sidebar-link>
-            <x-sidebar-link href="{{ route('admintoko.prediksi-penjualan') }}" icon="fas fa-chart-line" :active="request()->routeIs('admintoko.prediksi-penjualan')">Prediksi Penjualan</x-sidebar-link>
         @endauth
 
         </x-sidebar-section>

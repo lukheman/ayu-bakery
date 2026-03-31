@@ -1,6 +1,6 @@
 @props([
-    'title' => 'AdminPro - Modern Admin Dashboard',
-    'description' => 'A beautiful, modern admin dashboard template built with Laravel, Livewire, and Tailwind CSS',
+    'title' => 'Ayu Bakery - Toko Roti & Kue',
+    'description' => 'Ayu Bakery menyediakan aneka roti dan kue berkualitas dengan bahan pilihan dan harga terjangkau',
     'type' => 'guest',
 ])
 
@@ -17,15 +17,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome-free-7.2.0-web/css/all.min.css')}}">
-
     <link rel="stylesheet" href="{{ asset('assets/bootstrap/css/bootstrap.min.css')}}">
 
     <style>
         :root {
-            --primary-color: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary-color: #0ea5e9;
+            --primary-color: #e11d48;
+            --primary-dark: #be123c;
+            --primary-light: #fb7185;
+            --secondary-color: #f59e0b;
+            --accent-color: #7c3aed;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
@@ -33,20 +33,9 @@
             --text-secondary: #64748b;
             --text-muted: #94a3b8;
             --border-color: #e2e8f0;
-            --bg-light: #f8fafc;
+            --bg-light: #fffbeb;
             --bg-white: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --primary-color: #818cf8;
-            --primary-dark: #6366f1;
-            --primary-light: #a5b4fc;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --bg-light: #0f172a;
-            --bg-white: #1e293b;
+            --bg-warm: #fff7ed;
         }
 
         * {
@@ -61,33 +50,28 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-light);
+            background: var(--bg-white);
             color: var(--text-primary);
             line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ===== NAVBAR (shared across all pages) ===== */
+        /* ===== NAVBAR ===== */
         .site-navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
-        [data-theme="dark"] .site-navbar {
-            background: rgba(15, 23, 42, 0.95);
-        }
-
         .site-navbar-container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 0.875rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -96,15 +80,23 @@
         .site-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
             color: var(--primary-color);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
         }
 
-        .site-brand i {
-            font-size: 1.75rem;
+        .site-brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
         }
 
         .site-nav {
@@ -121,6 +113,7 @@
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
+            font-size: 0.95rem;
             transition: color 0.3s ease;
         }
 
@@ -131,17 +124,17 @@
         .site-navbar-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .btn-nav {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1.25rem;
             border-radius: 10px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             text-decoration: none;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -162,39 +155,15 @@
         .btn-nav-primary {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.25);
         }
 
         .btn-nav-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);
             color: white;
         }
 
-        /* Theme Toggle */
-        .theme-toggle {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .theme-toggle:hover {
-            background: var(--border-color);
-            color: var(--primary-color);
-        }
-
-        .theme-toggle i {
-            font-size: 1.25rem;
-        }
-
-        /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
             background: transparent;
@@ -205,20 +174,12 @@
         }
 
         @media (max-width: 768px) {
-            .site-nav {
-                display: none;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .site-navbar-actions .btn-nav-outline {
-                display: none;
-            }
+            .site-nav { display: none; }
+            .mobile-menu-btn { display: block; }
+            .site-navbar-actions .btn-nav-outline { display: none; }
         }
 
-        /* ===== GUEST PAGE STYLES ===== */
+        /* ===== SHARED ===== */
         .container {
             max-width: 1280px;
             margin: 0 auto;
@@ -226,7 +187,7 @@
         }
 
         .section {
-            padding: 6rem 0;
+            padding: 5rem 0;
         }
 
         .btn {
@@ -243,6 +204,18 @@
             border: none;
         }
 
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);
+            color: white;
+        }
+
         .btn-outline {
             background: transparent;
             border: 2px solid var(--border-color);
@@ -254,59 +227,51 @@
             color: var(--primary-color);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
         .btn-lg {
             padding: 1rem 2rem;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
         }
 
         /* ===== FOOTER ===== */
         .footer {
-            background: var(--bg-white);
-            border-top: 1px solid var(--border-color);
-            padding: 3rem 0;
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 4rem 0 2rem;
         }
 
         .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 2rem;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 3rem;
         }
 
-        .footer-brand {
-            max-width: 300px;
+        .footer-brand-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-decoration: none;
         }
 
         .footer-brand p {
-            color: var(--text-secondary);
-            margin-top: 1rem;
-            font-size: 0.95rem;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 4rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.7;
         }
 
         .footer-column h4 {
-            color: var(--text-primary);
+            color: white;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
         }
 
         .footer-column ul {
             list-style: none;
+            padding: 0;
         }
 
         .footer-column li {
@@ -314,19 +279,20 @@
         }
 
         .footer-column a {
-            color: var(--text-secondary);
+            color: #94a3b8;
             text-decoration: none;
+            font-size: 0.9rem;
             transition: color 0.3s;
         }
 
         .footer-column a:hover {
-            color: var(--primary-color);
+            color: var(--primary-light);
         }
 
         .footer-bottom {
             margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+            border-top: 1px solid #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -335,26 +301,27 @@
         }
 
         .footer-bottom p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            color: #64748b;
+            font-size: 0.85rem;
         }
 
         .footer-social {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .footer-social a {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--bg-light);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #334155;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary);
+            color: #94a3b8;
             text-decoration: none;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
 
         .footer-social a:hover {
@@ -364,14 +331,9 @@
 
         @media (max-width: 768px) {
             .footer-container {
-                flex-direction: column;
-            }
-
-            .footer-links {
-                flex-direction: column;
+                grid-template-columns: 1fr;
                 gap: 2rem;
             }
-
             .footer-bottom {
                 flex-direction: column;
                 text-align: center;
@@ -380,181 +342,157 @@
 
         /* ===== AUTH PAGE STYLES ===== */
         .auth-section {
-            min-height: calc(100vh - 73px);
-            margin-top: 73px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 30%, #fecdd3 60%, #fda4af 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem 2rem;
+            padding: 2rem;
             position: relative;
             overflow: hidden;
         }
 
-        /* Animated background shapes */
         .bg-shapes {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: 0;
         }
 
         .bg-shapes .shape {
             position: absolute;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            animation: float 15s infinite ease-in-out;
+            background: rgba(225, 29, 72, 0.06);
+            animation: authFloat 20s infinite ease-in-out;
         }
 
-        .bg-shapes .shape:nth-child(1) {
-            width: 400px;
-            height: 400px;
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
+        .bg-shapes .shape:nth-child(1) { width: 500px; height: 500px; top: -150px; left: -150px; }
+        .bg-shapes .shape:nth-child(2) { width: 350px; height: 350px; bottom: -100px; right: -80px; animation-delay: -7s; }
+        .bg-shapes .shape:nth-child(3) { width: 250px; height: 250px; top: 40%; left: 60%; animation-delay: -14s; background: rgba(245, 158, 11, 0.06); }
+
+        @keyframes authFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-25px) rotate(8deg); }
+            66% { transform: translateY(15px) rotate(-4deg); }
         }
 
-        .bg-shapes .shape:nth-child(2) {
-            width: 300px;
-            height: 300px;
-            bottom: -50px;
-            right: -50px;
-            animation-delay: -5s;
-        }
-
-        .bg-shapes .shape:nth-child(3) {
-            width: 200px;
-            height: 200px;
-            top: 50%;
-            left: 50%;
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            33% {
-                transform: translateY(-30px) rotate(10deg);
-            }
-            66% {
-                transform: translateY(20px) rotate(-5deg);
-            }
-        }
-
-        .login-container {
+        .auth-container {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 450px;
+            max-width: 460px;
         }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
+        .auth-card {
+            background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(20px);
             border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            animation: slideUp 0.6s ease-out;
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.12);
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: authSlideUp 0.5s ease-out;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes authSlideUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .brand-logo {
+        .auth-brand {
             text-align: center;
             margin-bottom: 2rem;
         }
 
-        .brand-logo .icon-wrapper {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            border-radius: 20px;
+        .auth-brand .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border-radius: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-            animation: pulse 2s infinite;
+            box-shadow: 0 8px 25px rgba(225, 29, 72, 0.3);
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-            }
-            50% {
-                box-shadow: 0 10px 40px rgba(99, 102, 241, 0.6);
-            }
-        }
-
-        .brand-logo .icon-wrapper i {
-            font-size: 2.5rem;
+        .auth-brand .icon-wrapper i {
+            font-size: 2rem;
             color: white;
         }
 
-        .brand-logo h1 {
-            font-size: 1.75rem;
+        .auth-brand h1 {
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
         }
 
-        .brand-logo p {
+        .auth-brand p {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
-        .form-floating {
-            margin-bottom: 1.25rem;
+        .form-group {
+            margin-bottom: 1.15rem;
         }
 
-        .form-floating .form-control {
-            height: 60px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem 1rem 1rem 3rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f8fafc;
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
-        .form-floating .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-            background: white;
+        .input-wrapper {
+            position: relative;
         }
 
-        .form-floating label {
-            padding: 1rem 1rem 1rem 3rem;
-            color: var(--text-muted);
-        }
-
-        .form-floating .input-icon {
+        .input-wrapper .input-icon {
             position: absolute;
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 1.1rem;
-            z-index: 5;
-            transition: color 0.3s ease;
+            font-size: 0.95rem;
+            transition: color 0.3s;
         }
 
-        .form-floating:focus-within .input-icon {
+        .input-wrapper:focus-within .input-icon {
             color: var(--primary-color);
+        }
+
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            height: 50px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0 1rem 0 2.75rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            color: var(--text-primary);
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.08);
+            background: white;
+        }
+
+        .input-wrapper input.is-invalid,
+        .input-wrapper select.is-invalid {
+            border-color: var(--danger-color);
+        }
+
+        .invalid-feedback {
+            color: var(--danger-color);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
         }
 
         .password-toggle {
@@ -566,9 +504,8 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            z-index: 5;
-            padding: 0.5rem;
-            transition: color 0.3s ease;
+            padding: 0.35rem;
+            transition: color 0.3s;
         }
 
         .password-toggle:hover {
@@ -581,235 +518,166 @@
         }
 
         .form-check-input:focus {
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
             border-color: var(--primary-color);
         }
 
         .form-check-label {
             color: var(--text-secondary);
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
-        .forgot-password {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .forgot-password:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
-
-        .btn-login {
+        .btn-auth {
             width: 100%;
-            height: 56px;
+            height: 52px;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             border: none;
             border-radius: 12px;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             position: relative;
             overflow: hidden;
         }
 
-        .btn-login::before {
+        .btn-auth::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
             transition: left 0.5s ease;
         }
 
-        .btn-login:hover {
+        .btn-auth:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 25px rgba(225, 29, 72, 0.35);
         }
 
-        .btn-login:hover::before {
-            left: 100%;
-        }
+        .btn-auth:hover::before { left: 100%; }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .btn-login:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-login i {
-            margin-left: 0.5rem;
-            transition: transform 0.3s ease;
-        }
-
-        .btn-login:hover i {
-            transform: translateX(5px);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
-        }
-
-        .divider span {
-            padding: 0 1rem;
-        }
-
-        .social-login {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .btn-social {
-            flex: 1;
-            height: 50px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .btn-social:hover {
-            border-color: var(--primary-color);
-            background: #f8fafc;
-            transform: translateY(-2px);
-        }
-
-        .btn-social i {
-            font-size: 1.25rem;
-        }
-
-        .btn-social.google i {
-            color: #ea4335;
-        }
-
-        .btn-social.github i {
-            color: #333;
-        }
-
-        .signup-link {
+        .auth-footer-link {
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .signup-link a {
+        .auth-footer-link a {
             color: var(--primary-color);
             font-weight: 600;
             text-decoration: none;
-            transition: color 0.3s ease;
         }
 
-        .signup-link a:hover {
-            color: var(--primary-dark);
+        .auth-footer-link a:hover {
             text-decoration: underline;
         }
 
-        /* Auth responsive adjustments */
+        /* Role selector tabs */
+        .role-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            background: #f1f5f9;
+            padding: 0.3rem;
+            border-radius: 12px;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .role-option.active {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .role-option:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
         @media (max-width: 576px) {
-            .login-card {
+            .auth-card {
                 padding: 2rem 1.5rem;
             }
-
-            .brand-logo .icon-wrapper {
-                width: 64px;
-                height: 64px;
+            .auth-brand .icon-wrapper {
+                width: 60px; height: 60px;
             }
-
-            .brand-logo .icon-wrapper i {
-                font-size: 2rem;
+            .auth-brand .icon-wrapper i {
+                font-size: 1.75rem;
             }
-
-            .brand-logo h1 {
-                font-size: 1.5rem;
-            }
-
-            .social-login {
-                flex-direction: column;
+            .auth-brand h1 {
+                font-size: 1.3rem;
             }
         }
 
-        /* Input autofill styling */
+        /* Autofill styling */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {
-            -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset;
+            -webkit-box-shadow: 0 0 0px 1000px #fafafa inset;
             -webkit-text-fill-color: var(--text-primary);
-            transition: background-color 5000s ease-in-out 0s;
         }
     </style>
     {{ $styles ?? '' }}
 </head>
 
 <body>
-    {{-- Navbar (shared across all pages) --}}
+    {{-- Navbar (always visible) --}}
     <nav class="site-navbar">
         <div class="site-navbar-container">
             <a href="/" class="site-brand">
-                <i class="fas fa-layer-group"></i>
-                <span>AdminPro</span>
+                <div class="site-brand-icon">
+                    <i class="fas fa-birthday-cake"></i>
+                </div>
+                <span>Ayu Bakery</span>
             </a>
 
             <ul class="site-nav">
-                <li><a href="/#features" class="site-nav-link">Features</a></li>
-                <li><a href="/#components" class="site-nav-link">Components</a></li>
-                <li><a href="/#pricing" class="site-nav-link">Pricing</a></li>
-                <li><a href="/#contact" class="site-nav-link">Contact</a></li>
+                <li><a href="/#tentang" class="site-nav-link">Tentang</a></li>
+                <li><a href="/#keunggulan" class="site-nav-link">Keunggulan</a></li>
+                <li><a href="/#bergabung" class="site-nav-link">Bergabung</a></li>
             </ul>
 
             <div class="site-navbar-actions">
-                <button class="theme-toggle" onclick="toggleTheme()">
-                    <i class="fas fa-moon" id="theme-icon"></i>
-                </button>
-                <a href="{{ route('login') }}" class="btn-nav btn-nav-outline">Sign In</a>
-                <a href="{{ route('register') }}" class="btn-nav btn-nav-primary">Get Started</a>
-                <button class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <a href="{{ route('login') }}" class="btn-nav btn-nav-outline">Masuk</a>
+                <a href="{{ route('register') }}" class="btn-nav btn-nav-primary">Daftar</a>
+                <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
             </div>
         </div>
     </nav>
 
     @if($type === 'auth')
-        {{-- Auth Pages: gradient section with animated shapes --}}
-        <section class="auth-section">
+        <section class="auth-section" style="padding-top: calc(73px + 2rem);">
             <div class="bg-shapes">
                 <div class="shape"></div>
                 <div class="shape"></div>
                 <div class="shape"></div>
             </div>
-
             {{ $slot }}
         </section>
     @else
-        {{-- Guest Pages: main content + footer --}}
         <main>
             {{ $slot }}
         </main>
@@ -818,51 +686,48 @@
             <div class="container">
                 <div class="footer-container">
                     <div class="footer-brand">
-                        <a href="/" class="site-brand">
-                            <i class="fas fa-layer-group"></i>
-                            <span>AdminPro</span>
-                        </a>
-                        <p>A modern, elegant admin dashboard template built with Laravel, Livewire, and Tailwind CSS.</p>
+                        <div class="footer-brand-name">
+                            <div class="site-brand-icon" style="width: 36px; height: 36px; font-size: 1rem;">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            Ayu Bakery
+                        </div>
+                        <p>Menyediakan aneka roti dan kue berkualitas dengan bahan pilihan terbaik. Melayani pembelian langsung, pesanan reseller, dan pengiriman ke seluruh area.</p>
                     </div>
 
-                    <div class="footer-links">
-                        <div class="footer-column">
-                            <h4>Product</h4>
-                            <ul>
-                                <li><a href="#features">Features</a></li>
-                                <li><a href="#components">Components</a></li>
-                                <li><a href="#pricing">Pricing</a></li>
-                                <li><a href="#">Changelog</a></li>
-                            </ul>
-                        </div>
-                        <div class="footer-column">
-                            <h4>Resources</h4>
-                            <ul>
-                                <li><a href="#">Documentation</a></li>
-                                <li><a href="#">Tutorials</a></li>
-                                <li><a href="#">Blog</a></li>
-                                <li><a href="#">Support</a></li>
-                            </ul>
-                        </div>
-                        <div class="footer-column">
-                            <h4>Company</h4>
-                            <ul>
-                                <li><a href="#">About</a></li>
-                                <li><a href="#">Careers</a></li>
-                                <li><a href="#">Privacy</a></li>
-                                <li><a href="#">Terms</a></li>
-                            </ul>
-                        </div>
+                    <div class="footer-column">
+                        <h4>Menu</h4>
+                        <ul>
+                            <li><a href="/#tentang">Tentang Kami</a></li>
+                            <li><a href="/#keunggulan">Keunggulan</a></li>
+                            <li><a href="/#bergabung">Bergabung</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Layanan</h4>
+                        <ul>
+                            <li><a href="{{ route('register') }}">Daftar Reseller</a></li>
+                            <li><a href="{{ route('register') }}">Daftar Kurir</a></li>
+                            <li><a href="{{ route('login') }}">Login</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Kontak</h4>
+                        <ul>
+                            <li><i class="fas fa-map-marker-alt" style="width: 16px; color: var(--primary-light);"></i> Jl. Contoh No. 123</li>
+                            <li><i class="fas fa-phone" style="width: 16px; color: var(--primary-light);"></i> 0812-3456-7890</li>
+                            <li><i class="fas fa-envelope" style="width: 16px; color: var(--primary-light);"></i> info@ayubakery.com</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class="footer-bottom">
-                    <p>&copy; {{ date('Y') }} AdminPro. All rights reserved.</p>
+                    <p>&copy; {{ date('Y') }} Ayu Bakery. All rights reserved.</p>
                     <div class="footer-social">
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-github"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
@@ -870,56 +735,20 @@
     @endif
 
     <script src="{{ asset('assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <script>
-        // Theme Toggle
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            } else if (prefersDark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-
-            updateThemeIcon();
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const themeIcon = document.getElementById('theme-icon');
-            if (themeIcon) {
-                themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        }
-
-        initTheme();
-
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
         });
     </script>
+    @livewireStyles
+    @livewireScripts
     {{ $scripts ?? '' }}
 </body>
 
