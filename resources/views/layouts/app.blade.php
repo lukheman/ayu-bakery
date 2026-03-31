@@ -596,6 +596,7 @@
             <x-sidebar-link href="{{ route('admintoko.laporan-persediaan') }}" icon="fas fa-file-alt" :active="request()->routeIs('admintoko.laporan-persediaan')">Laporan Persediaan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.laporan-penjualan') }}" icon="fas fa-chart-bar" :active="request()->routeIs('admintoko.laporan-penjualan')">Laporan Penjualan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.laporan-pesanan') }}" icon="fas fa-clipboard-list" :active="request()->routeIs('admintoko.laporan-pesanan')">Laporan Pesanan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.prediksi-penjualan') }}" icon="fas fa-chart-line" :active="request()->routeIs('admintoko.prediksi-penjualan')">Prediksi Penjualan</x-sidebar-link>
         @endauth
 
         </x-sidebar-section>

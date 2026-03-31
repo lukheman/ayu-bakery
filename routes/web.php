@@ -11,6 +11,7 @@ use App\Livewire\AdminToko\ProdukManagement;
 use App\Livewire\PemilikToko\LaporanPersediaan;
 use App\Livewire\PemilikToko\LaporanPenjualan;
 use App\Livewire\PemilikToko\LaporanPesanan;
+use App\Livewire\PemilikToko\PrediksiPenjualan;
 use App\Livewire\Reseller\Katalog;
 use App\Livewire\Reseller\Keranjang;
 use App\Livewire\Reseller\PesananSaya;
@@ -41,6 +42,7 @@ Route::prefix('admintoko')->middleware('auth:admin_toko,pemilik_toko,kasir,resel
     Route::get('/laporan-persediaan', LaporanPersediaan::class)->name('admintoko.laporan-persediaan');
     Route::get('/laporan-penjualan', LaporanPenjualan::class)->name('admintoko.laporan-penjualan');
     Route::get('/laporan-pesanan', LaporanPesanan::class)->name('admintoko.laporan-pesanan');
+    Route::get('/prediksi-penjualan', PrediksiPenjualan::class)->name('admintoko.prediksi-penjualan');
     Route::get('/profile', \App\Livewire\Admin\Profile::class)->name('admintoko.profile');
     Route::post('/logout', [LogoutController::class, '__invoke'])->name('logout');
 });
