@@ -603,7 +603,6 @@
 
         <x-sidebar-section title="Account">
             <x-sidebar-link href="{{ route('admintoko.profile') }}" icon="fas fa-user-circle" :active="request()->routeIs('admin.profile')">Profile</x-sidebar-link>
-            <x-sidebar-link href="#settings" icon="fas fa-cog">Settings</x-sidebar-link>
         </x-sidebar-section>
 
     </x-sidebar>
