@@ -104,9 +104,16 @@
                                             <i class="fas fa-check"></i> Terima
                                         </button>
                                     @elseif ($pesanan->status === \App\Enums\StatusPesanan::DIPROSES->value)
+                                        <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
+                                            <i class="fas fa-print"></i> Cetak Nota
+                                        </a>
                                         <button wire:click="openDeliveryModal({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(99,102,241,0.1); color: var(--primary-color);" title="Atur Pengiriman">
                                             <i class="fas fa-truck"></i> Pengiriman
                                         </button>
+                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::SELESAI->value && $pesanan->kode_konfirmasi)
+                                        <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
+                                            <i class="fas fa-print"></i> Cetak Nota
+                                        </a>
                                     @endif
                                 </div>
                             </td>
