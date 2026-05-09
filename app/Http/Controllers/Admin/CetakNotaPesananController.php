@@ -36,7 +36,7 @@ class CetakNotaPesananController extends Controller
     {
         $encoder = Encoder::encode(
             $content,
-            ErrorCorrectionLevel::H
+            ErrorCorrectionLevel::H()
         );
 
         $byteMatrix = $encoder->getMatrix();
