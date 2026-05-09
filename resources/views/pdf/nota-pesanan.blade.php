@@ -98,10 +98,6 @@
             padding: 10px 0;
         }
 
-        .qr-section img {
-            display: inline-block;
-        }
-
         .kode-konfirmasi {
             font-size: 12px;
             font-weight: bold;
@@ -114,6 +110,33 @@
             font-size: 8px;
             color: #777;
             margin-top: 4px;
+        }
+
+        /* QR Code HTML Table Styles */
+        .qr-table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: 0 auto;
+            width: auto;
+        }
+
+        .qr-table td {
+            padding: 0;
+            margin: 0;
+            width: 4px;
+            height: 4px;
+            min-width: 4px;
+            min-height: 4px;
+            line-height: 0;
+            font-size: 0;
+        }
+
+        .qr-table td.qr-black {
+            background-color: #000000;
+        }
+
+        .qr-table td.qr-white {
+            background-color: #ffffff;
         }
 
         .status-badge {
@@ -223,15 +246,21 @@
 
     <hr>
 
-    {{-- QR Code Section --}}
-    @if($pesanan->kode_konfirmasi)
+    {{-- QR Code Section - Rendered as HTML table for DomPDF compatibility --}}
+    @if($pesanan->kode_konfirmasi && !empty($qrMatrix))
     <div class="qr-section">
         <div style="margin-bottom: 6px; font-size: 9px; color: #555; font-weight: bold;">
             SCAN QR UNTUK KONFIRMASI PENGIRIMAN
         </div>
-        <div>
-            <img src="{{ $qrCodeBase64 }}" style="width: 150px; height: 150px;" alt="QR Code">
-        </div>
+        <table class="qr-table">
+            @foreach($qrMatrix as $row)
+            <tr>
+                @foreach($row as $cell)
+                <td class="{{ $cell ? 'qr-black' : 'qr-white' }}"></td>
+                @endforeach
+            </tr>
+            @endforeach
+        </table>
         <div class="kode-konfirmasi">{{ $pesanan->kode_konfirmasi }}</div>
         <div class="qr-label">Kode ini digunakan kurir untuk konfirmasi penerimaan</div>
     </div>
