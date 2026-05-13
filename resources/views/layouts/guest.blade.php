@@ -714,8 +714,8 @@
                     <div class="footer-column">
                         <h4>Kontak</h4>
                         <ul>
-                            <li><i class="fas fa-map-marker-alt" style="width: 16px; color: var(--primary-light);"></i> Jl. Contoh No. 123</li>
-                            <li><i class="fas fa-phone" style="width: 16px; color: var(--primary-light);"></i> 0812-3456-7890</li>
+                            <li><i class="fas fa-map-marker-alt" style="width: 16px; color: var(--primary-light);"></i> JL. Andi Jemma, Lamokato Kecamatan Kolaka</li>
+                            <li><i class="fas fa-phone" style="width: 16px; color: var(--primary-light);"></i>0821-9660-8340</li>
                             <li><i class="fas fa-envelope" style="width: 16px; color: var(--primary-light);"></i> info@ayubakery.com</li>
                         </ul>
                     </div>

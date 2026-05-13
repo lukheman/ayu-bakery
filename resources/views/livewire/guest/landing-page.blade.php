@@ -47,7 +47,7 @@
                     <div style="display: flex; align-items: center; gap: 2.5rem;">
                         <div style="text-align: center;">
                             <span
-                                style="display: block; font-size: 1.75rem; font-weight: 800; color: #e11d48;">50+</span>
+                                style="display: block; font-size: 1.75rem; font-weight: 800; color: #e11d48;">4</span>
                             <span style="font-size: 0.85rem; color: #94a3b8;">Varian Produk</span>
                         </div>
                         <div style="width: 1px; height: 45px; background: #e2e8f0;"></div>

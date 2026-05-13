@@ -85,12 +85,12 @@ class PersediaanManagement extends Component
         $tglExp = Carbon::parse($tglExpStr)->startOfDay();
         $now = Carbon::now()->startOfDay();
 
-        $sisaHari = max(0, $now->diffInDays($tglExp, false));
+        $sisaHari = $now->diffInDays($tglExp, false);
         $sisaHariRounded = (int) ceil($sisaHari);
 
         if ($sisaHariRounded > 14) {
             $status = StatusExp::AMAN->value;
-        } elseif ($sisaHariRounded > 3) {
+        } elseif ($sisaHariRounded >= 0) {
             $status = StatusExp::HAMPIR_EXP->value;
         } else {
             $status = StatusExp::EXPIRED->value;
@@ -169,8 +169,46 @@ class PersediaanManagement extends Component
         $this->editingProduk = null;
     }
 
+    protected function hapusPersediaanExpired(): void
+    {
+        $persediaans = Persediaan::whereNotNull('tgl_exp')->get();
+        $now = Carbon::now()->startOfDay();
+
+        foreach ($persediaans as $persediaan) {
+            $tglExp = Carbon::parse($persediaan->tgl_exp)->startOfDay();
+            $sisaHari = $now->diffInDays($tglExp, false);
+            $sisaHariRounded = (int) ceil($sisaHari);
+
+            if ($sisaHariRounded < 0) {
+                // Hapus jika sudah lewat masa expired
+                $persediaan->delete();
+            } else {
+                // Update status agar selalu real-time
+                if ($sisaHariRounded > 14) {
+                    $status = StatusExp::AMAN->value;
+                } elseif ($sisaHariRounded > 3) {
+                    $status = StatusExp::HAMPIR_EXP->value;
+                } else {
+                    $status = StatusExp::EXPIRED->value;
+                }
+                
+                if ($status === StatusExp::EXPIRED->value) {
+                    $persediaan->delete();
+                } elseif ($persediaan->sisa_hari !== $sisaHariRounded || $persediaan->status_exp !== $status) {
+                    $persediaan->update([
+                        'sisa_hari' => $sisaHariRounded,
+                        'status_exp' => $status,
+                    ]);
+                }
+            }
+        }
+    }
+
     public function render()
     {
+        // Otomatis hapus yang expired sebelum menampilkan data
+        $this->hapusPersediaanExpired();
+
         $persediaans = Persediaan::query()
             ->with('produk')
             ->when($this->search, function ($query) {

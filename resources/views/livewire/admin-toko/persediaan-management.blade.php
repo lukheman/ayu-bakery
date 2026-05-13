@@ -184,6 +184,15 @@
                                                 updateBesar(qtyKecil);
                                             ">
                                 <div class="row g-2">
+
+                                    <div class="col-6">
+                                        <label for="jumlah_besar" class="form-label">
+                                            Jumlah ({{ $editingProduk->unit_besar }})
+                                        </label>
+                                        <input type="number" class="form-control" id="jumlah_besar" x-ref="inputBesar"
+                                            @input="updateKecil($event.target.value)" min="0" step="any">
+                                    </div>
+
                                     <div class="col-6">
                                         <label for="jumlah" class="form-label">
                                             Jumlah ({{ $editingProduk->unit_kecil ?? 'pcs' }})
@@ -194,14 +203,6 @@
                                         @error('jumlah')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                    </div>
-
-                                    <div class="col-6">
-                                        <label for="jumlah_besar" class="form-label">
-                                            Jumlah ({{ $editingProduk->unit_besar }})
-                                        </label>
-                                        <input type="number" class="form-control" id="jumlah_besar" x-ref="inputBesar"
-                                            @input="updateKecil($event.target.value)" min="0" step="any">
                                     </div>
                                 </div>
                                 <small class="text-muted mt-1 d-block">

@@ -12,6 +12,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PenjualanExport;
 
 #[Title('Laporan Penjualan - Ayu Bakery')]
 #[Layout('layouts.app')]
@@ -123,6 +125,11 @@ class LaporanPenjualan extends Component
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, 'laporan-penjualan-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new PenjualanExport($this->tanggalDari, $this->tanggalSampai), 'laporan-penjualan-' . now()->format('Y-m-d') . '.xlsx');
     }
 
     public function render()

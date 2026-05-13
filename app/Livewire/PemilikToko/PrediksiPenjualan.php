@@ -13,13 +13,21 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\PenjualanImport;
 
 #[Title('Prediksi Penjualan (Moving Average) - Ayu Bakery')]
 #[Layout('layouts.app')]
 class PrediksiPenjualan extends Component
 {
+    use WithFileUploads;
+
     public int $jumlahPeriode = 4;
     public string $search = '';
+
+    public $fileExcel;
+    public bool $showImportModal = false;
 
     public function updatedJumlahPeriode(): void
     {
@@ -186,6 +194,27 @@ class PrediksiPenjualan extends Component
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, 'prediksi-penjualan-ma-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->reset('fileExcel');
+    }
+
+    public function importExcel()
+    {
+        $this->validate([
+            'fileExcel' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            Excel::import(new PenjualanImport, $this->fileExcel->getRealPath());
+            session()->flash('message', 'Data penjualan berhasil diimport.');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            session()->flash('message', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
     }
 
     public function render()

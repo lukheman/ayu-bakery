@@ -10,6 +10,10 @@
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
+            <button wire:click="$set('showImportModal', true)" class="btn btn-modern"
+                style="background: #f59e0b; color: white; border: none; display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 0.5rem 1rem;">
+                <i class="fas fa-file-import"></i> Import Data Penjualan
+            </button>
             <button wire:click="simpanPrediksi" class="btn btn-modern"
                 style="background: var(--success-color); color: white; border: none; display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-save"></i> Simpan Prediksi
@@ -228,4 +232,52 @@
             </table>
         </div>
     </div>
+
+    {{-- Import Modal --}}
+    @if ($showImportModal)
+        <div class="modal-backdrop-custom" wire:click.self="closeImportModal">
+            <div class="modal-content-custom" wire:click.stop style="max-width: 500px;">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title-custom">Import Data Penjualan</h5>
+                    <button type="button" class="modal-close-btn" wire:click="closeImportModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form wire:submit="importExcel">
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; color: var(--text-primary);">Pilih File Excel / CSV</label>
+                        <input type="file" class="form-control" 
+                               wire:model="fileExcel" accept=".xlsx,.xls,.csv" required
+                               style="background: var(--input-bg); border-color: var(--border-color); padding: 0.5rem;">
+                        
+                        <div class="form-text mt-2" style="font-size: 0.8rem; color: var(--text-muted);">
+                            Pastikan format kolom (baris pertama) sesuai: <strong>Tanggal, Nomor Struk, Kasir, Metode Pembayaran, Nama Produk, Harga, Jumlah, Subtotal</strong>.
+                        </div>
+                        <div class="form-text mt-2" style="font-size: 0.8rem; color: #f59e0b;">
+                            <i class="fas fa-info-circle me-1"></i> Produk yang belum ada di database akan ditambahkan secara otomatis berdasarkan <strong>Nama Produk</strong>.
+                        </div>
+                        
+                        @error('fileExcel') 
+                            <div class="invalid-feedback d-block">{{ $message }}</div> 
+                        @enderror
+                        
+                        <div wire:loading wire:target="fileExcel" class="mt-2 text-primary small" style="font-size: 0.85rem;">
+                            <i class="fas fa-spinner fa-spin me-1"></i> Mengunggah file...
+                        </div>
+                        <div wire:loading wire:target="importExcel" class="mt-2 text-primary small" style="font-size: 0.85rem;">
+                            <i class="fas fa-spinner fa-spin me-1"></i> Memproses data...
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-modern" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);" wire:click="closeImportModal">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-modern btn-primary-modern" wire:loading.attr="disabled">
+                            Import Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

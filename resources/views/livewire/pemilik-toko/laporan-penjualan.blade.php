@@ -9,11 +9,29 @@
                 Rekapitulasi penjualan kasir dan reseller
             </p>
         </div>
-        <button wire:click="downloadPdf" class="btn btn-modern btn-primary-modern"
-            style="display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-file-pdf"></i> Cetak Semua PDF
-        </button>
+        <div class="d-flex gap-2">
+            <button wire:click="exportExcel" class="btn btn-modern"
+                style="display: flex; align-items: center; gap: 8px; background: var(--success-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06);">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
+            <button wire:click="downloadPdf" class="btn btn-modern btn-primary-modern"
+                style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-file-pdf"></i> Cetak Semua PDF
+            </button>
+        </div>
     </div>
+
+    {{-- Flash Messages --}}
+    @if (session()->has('success'))
+        <x-alert variant="success" title="Berhasil!" class="mb-4">
+            {{ session('success') }}
+        </x-alert>
+    @endif
+    @if (session()->has('error'))
+        <x-alert variant="danger" title="Error!" class="mb-4">
+            {{ session('error') }}
+        </x-alert>
+    @endif
 
     {{-- Unified Statistics Cards --}}
     <div class="row g-3 mb-4">

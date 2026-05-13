@@ -11,7 +11,7 @@ class PersediaanSeeder extends Seeder
     public function run(): void
     {
         Produk::all()->each(function (Produk $produk) {
-            Persediaan::factory(rand(1, 3))->create([
+            Persediaan::factory(rand(1, 2))->create([
                 'id_produk' => $produk->id,
             ]);
         });
