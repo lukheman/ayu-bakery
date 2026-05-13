@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Laporan Persediaan - Ayu Bakery</title>
     <style>
+        @@page { size: A4; margin: 2cm; }
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +15,7 @@
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
-            color: #1e293b;
+            color: #111;
             line-height: 1.5;
         }
 
@@ -22,173 +23,118 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #6366f1;
+            border-bottom: 2px solid #111;
         }
 
         .header h1 {
             font-size: 18px;
             font-weight: 800;
-            color: #1e293b;
+            color: #111;
             margin-bottom: 2px;
         }
 
         .header h2 {
             font-size: 13px;
             font-weight: 600;
-            color: #6366f1;
+            color: #333;
             margin-bottom: 4px;
         }
 
         .header .date {
             font-size: 10px;
-            color: #94a3b8;
+            color: #555;
         }
 
-        /* Stats row */
-        .stats-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            display: table-cell;
-            width: 25%;
-            text-align: center;
-            padding: 10px 8px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-        }
-
-        .stat-box .value {
-            font-size: 18px;
-            font-weight: 800;
-            color: #1e293b;
-        }
-
-        .stat-box .label {
-            font-size: 9px;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        /* Product group */
         .produk-group {
-            margin-bottom: 16px;
+            margin: 20px;
             page-break-inside: avoid;
         }
 
         .produk-header {
-            background: #f1f5f9;
+            background: #eee;
             padding: 8px 12px;
-            border: 1px solid #e2e8f0;
-            border-bottom: 2px solid #6366f1;
+            border: 1px solid #aaa;
+            border-bottom: 2px solid #111;
         }
 
         .produk-name {
             font-size: 12px;
             font-weight: 700;
-            color: #1e293b;
+            color: #111;
         }
 
         .produk-meta {
             font-size: 9px;
-            color: #64748b;
+            color: #555;
         }
 
         .produk-stok {
             font-size: 11px;
             font-weight: 700;
-            color: #6366f1;
+            color: #111;
         }
 
-        /* Batch table */
-        table.batch-table {
+        .order-group {
+            margin: 20px;
+            page-break-inside: avoid;
+        }
+
+        table.main {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #e2e8f0;
-            border-top: none;
+            border: 1px solid #aaa;
         }
 
-        table.batch-table th {
-            background: #f8fafc;
-            font-size: 9px;
-            font-weight: 600;
+        table.main th {
+            background: #eee;
+            font-size: 8px;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #64748b;
-            padding: 6px 10px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            color: #111;
+            padding: 5px 8px;
+            border-bottom: 1px solid #aaa;
+            border-right: 1px solid #ccc;
         }
 
-        table.batch-table td {
-            padding: 6px 10px;
-            font-size: 10px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
+        table.main td {
+            padding: 5px 8px;
+            font-size: 9px;
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #ccc;
         }
 
-        table.batch-table tr:last-child td {
+        table.main tr:last-child td {
             border-bottom: none;
         }
 
-        /* Status badges */
         .badge {
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 6px;
             font-size: 9px;
-            font-weight: 600;
-        }
-
-        .badge-aman {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .badge-hampir_exp {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .badge-expired {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .text-success {
-            color: #16a34a;
-        }
-
-        .text-warning {
-            color: #d97706;
-        }
-
-        .text-danger {
-            color: #dc2626;
-        }
-
-        .text-muted {
-            color: #94a3b8;
-        }
-
-        .fw-bold {
             font-weight: 700;
+            border: 1px solid #555;
+            color: #111;
         }
+
+        .text-success { color: #111; font-weight: 600; }
+        .text-warning { color: #333; }
+        .text-danger  { color: #111; font-weight: 700; }
+        .text-muted   { color: #555; }
+        .fw-bold { font-weight: 700; }
 
         .footer {
             margin-top: 30px;
-            text-align: center;
+            text-align: right;
             font-size: 9px;
-            color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
+            color: #555;
+            border-top: 1px solid #aaa;
             padding-top: 10px;
+            margin-right: 20px;
         }
 
         .empty-state {
             text-align: center;
             padding: 30px;
-            color: #94a3b8;
+            color: #555;
         }
     </style>
 </head>
@@ -196,43 +142,16 @@
 <body>
     {{-- Header --}}
     <div class="header">
-        <h1>🎂 Ayu Bakery</h1>
+        <h1>Ayu Bakery</h1>
         <h2>Laporan Persediaan Produk</h2>
-        <div class="date">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
-
-    {{-- Statistics --}}
-    <table style="width: 100%; margin-bottom: 20px; border-collapse: separate; border-spacing: 6px 0;">
-        <tr>
-            <td style="text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; width: 25%;">
-                <div style="font-size: 18px; font-weight: 800; color: #6366f1;">{{ $totalProduk }}</div>
-                <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600;">Total Produk
-                </div>
-            </td>
-            <td style="text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; width: 25%;">
-                <div style="font-size: 18px; font-weight: 800; color: #10b981;">{{ number_format($totalStok) }}</div>
-                <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600;">Total Stok
-                </div>
-            </td>
-            <td style="text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; width: 25%;">
-                <div style="font-size: 18px; font-weight: 800; color: #f59e0b;">{{ $totalHampirExp }}</div>
-                <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600;">Hampir Expired
-                </div>
-            </td>
-            <td style="text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; width: 25%;">
-                <div style="font-size: 18px; font-weight: 800; color: #ef4444;">{{ $totalExpired }}</div>
-                <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600;">Batch Expired
-                </div>
-            </td>
-        </tr>
-    </table>
 
     {{-- Product Groups --}}
     @forelse($produks as $produk)
         @if($produk->persediaan->count() > 0)
             <div class="produk-group">
                 <div class="produk-header">
-                    <table style="width: 100%;">
+                    <table class="main">
                         <tr>
                             <td>
                                 <span class="produk-name">{{ $produk->nama_produk }}</span>
@@ -254,7 +173,7 @@
                     </table>
                 </div>
 
-                <table class="batch-table">
+                <table class="main">
                     <thead>
                         <tr>
                             <th style="width: 40px;">No</th>
@@ -289,8 +208,7 @@
                                 </td>
                                 <td>
                                     @if($batch->sisa_hari !== null)
-                                        <span
-                                            class="{{ $batch->sisa_hari <= 3 ? 'text-danger fw-bold' : ($batch->sisa_hari <= 14 ? 'text-warning fw-bold' : 'text-success') }}">
+                                        <span>
                                             {{ $batch->sisa_hari }} hari
                                         </span>
                                     @else
@@ -302,9 +220,7 @@
                                         $statusEnum = $batch->status_exp ? \App\Enums\StatusExp::tryFrom($batch->status_exp) : null;
                                     @endphp
                                     @if($statusEnum)
-                                        <span class="badge badge-{{ $statusEnum->value }}">
                                             {{ $statusEnum->label() }}
-                                        </span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
@@ -323,7 +239,7 @@
 
     {{-- Footer --}}
     <div class="footer">
-        Laporan ini digenerate secara otomatis oleh sistem Ayu Bakery.
+        Dicetak pada: {{ now()->format('d/m/Y H:i') }}
     </div>
 </body>
 

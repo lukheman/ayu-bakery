@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Laporan Pesanan - Ayu Bakery</title>
     <style>
+        @page { size: A4; margin: 2cm; }
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +15,7 @@
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
-            color: #1e293b;
+            color: #111;
             line-height: 1.5;
         }
 
@@ -22,93 +23,70 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #6366f1;
+            border-bottom: 2px solid #111;
         }
 
         .header h1 {
             font-size: 18px;
             font-weight: 800;
             margin-bottom: 2px;
+            color: #111;
         }
 
         .header h2 {
             font-size: 13px;
             font-weight: 600;
-            color: #6366f1;
+            color: #333;
             margin-bottom: 4px;
         }
 
         .header .date {
             font-size: 10px;
-            color: #94a3b8;
+            color: #555;
         }
 
         .period {
-            text-align: center;
-            font-size: 11px;
-            color: #64748b;
+            text-align: left;
+            font-size: 12px;
+            color: #333;
             margin-bottom: 16px;
-        }
-
-        table.stats {
-            width: 100%;
-            margin-bottom: 20px;
-            border-collapse: separate;
-            border-spacing: 4px 0;
-        }
-
-        table.stats td {
-            text-align: center;
-            padding: 8px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-        }
-
-        .stat-value {
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .stat-label {
-            font-size: 8px;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 600;
+            margin-left: 20px;
         }
 
         .order-group {
-            margin-bottom: 12px;
+            margin: 20px;
             page-break-inside: avoid;
         }
 
         .order-header {
-            background: #f1f5f9;
+            background: #eee;
             padding: 6px 10px;
-            border: 1px solid #e2e8f0;
-            border-bottom: 1px solid #6366f1;
+            border: 1px solid #aaa;
+            border-bottom: 2px solid #111;
         }
 
         table.items {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #e2e8f0;
-            border-top: none;
+            border: 1px solid #aaa;
         }
 
         table.items th {
-            background: #f8fafc;
+            background: #eee;
             font-size: 8px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #64748b;
+            color: #111;
             padding: 5px 8px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #aaa;
+            border-right: 1px solid #ccc;
         }
 
         table.items td {
             padding: 5px 8px;
             font-size: 9px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #ccc;
         }
 
         .text-right {
@@ -124,72 +102,42 @@
         }
 
         .text-muted {
-            color: #94a3b8;
+            color: #555;
         }
 
         .text-primary {
-            color: #6366f1;
+            color: #111;
         }
 
         .badge {
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 2px 6px;
             font-size: 9px;
-            font-weight: 600;
+            font-weight: 700;
+            border: 1px solid #555;
+            color: #111;
         }
 
-        .badge-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .badge-diproses {
-            background: #e0e7ff;
-            color: #4f46e5;
-        }
-
-        .badge-selesai {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .badge-dibatalkan {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .summary {
-            margin-top: 16px;
-            padding: 12px;
-            border: 2px solid #6366f1;
-            border-radius: 6px;
-        }
-
-        .summary table {
-            width: 100%;
-            font-size: 11px;
-        }
-
-        .summary td {
-            padding: 3px 0;
-        }
+        .badge-pending { border-color: #888; }
+        .badge-diproses { border-color: #888; }
+        .badge-selesai { border-color: #333; font-weight: 700; }
+        .badge-dibatalkan { border-color: #888; color: #555; }
 
         .footer {
             margin-top: 30px;
-            text-align: center;
+            text-align: right;
             font-size: 9px;
-            color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
+            color: #555;
+            border-top: 1px solid #aaa;
             padding-top: 10px;
+            margin-right: 20px;
         }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <h1>🎂 Ayu Bakery</h1>
+        <h1>Ayu Bakery</h1>
         <h2>Laporan Pesanan</h2>
-        <div class="date">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 
     <div class="period">
@@ -197,36 +145,6 @@
         {{ \Carbon\Carbon::parse($tanggalSampai)->format('d/m/Y') }}
     </div>
 
-    {{-- Statistics --}}
-    <table class="stats">
-        <tr>
-            <td>
-                <div class="stat-value text-primary">{{ number_format($totalPesanan) }}</div>
-                <div class="stat-label">Total</div>
-            </td>
-            <td>
-                <div class="stat-value" style="color: #d97706;">{{ number_format($totalPending) }}</div>
-                <div class="stat-label">Pending</div>
-            </td>
-            <td>
-                <div class="stat-value" style="color: #4f46e5;">{{ number_format($totalDiproses) }}</div>
-                <div class="stat-label">Diproses</div>
-            </td>
-            <td>
-                <div class="stat-value" style="color: #16a34a;">{{ number_format($totalSelesai) }}</div>
-                <div class="stat-label">Selesai</div>
-            </td>
-            <td>
-                <div class="stat-value" style="color: #dc2626;">{{ number_format($totalDibatalkan) }}</div>
-                <div class="stat-label">Batal</div>
-            </td>
-            <td>
-                <div class="stat-value" style="color: #1e293b; font-size: 12px;">Rp
-                    {{ number_format($totalNilai, 0, ',', '.') }}</div>
-                <div class="stat-label">Total Nilai</div>
-            </td>
-        </tr>
-    </table>
 
     {{-- Orders --}}
     @foreach($pesanans as $pesanan)
@@ -236,10 +154,10 @@
         @endphp
         <div class="order-group">
             <div class="order-header">
-                <table style="width: 100%;">
+                <table>
                     <tr>
                         <td>
-                            <span class="fw-bold text-primary">#{{ $pesanan->id }}</span>
+                            <span class="fw-bold">#{{ $pesanan->id }}</span>
                             <span class="text-muted"
                                 style="margin-left: 8px;">{{ $pesanan->created_at->format('d/m/Y H:i') }}</span>
                             <span style="margin-left: 8px;">{{ $pesanan->reseller?->nama ?? '-' }}</span>
@@ -285,41 +203,8 @@
         </div>
     @endif
 
-    {{-- Summary --}}
-    @if($pesanans->isNotEmpty())
-        <div class="summary">
-            <table>
-                <tr>
-                    <td class="fw-bold">Total Pesanan</td>
-                    <td class="text-right fw-bold">{{ number_format($totalPesanan) }} pesanan</td>
-                </tr>
-                <tr>
-                    <td class="fw-bold">Total Nilai</td>
-                    <td class="text-right fw-bold" style="font-size: 14px; color: #6366f1;">Rp
-                        {{ number_format($totalNilai, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td class="text-muted">Selesai</td>
-                    <td class="text-right">{{ $totalSelesai }}</td>
-                </tr>
-                <tr>
-                    <td class="text-muted">Diproses</td>
-                    <td class="text-right">{{ $totalDiproses }}</td>
-                </tr>
-                <tr>
-                    <td class="text-muted">Pending</td>
-                    <td class="text-right">{{ $totalPending }}</td>
-                </tr>
-                <tr>
-                    <td class="text-muted">Dibatalkan</td>
-                    <td class="text-right">{{ $totalDibatalkan }}</td>
-                </tr>
-            </table>
-        </div>
-    @endif
-
     <div class="footer">
-        Laporan ini digenerate secara otomatis oleh sistem Ayu Bakery.
+        Dicetak pada: {{ now()->format('d/m/Y H:i') }}
     </div>
 </body>
 

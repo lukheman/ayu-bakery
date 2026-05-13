@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Prediksi Penjualan (Moving Average) - Ayu Bakery</title>
     <style>
+        @@page { size: A4; margin: 2cm; }
         * {
             margin: 0;
             padding: 0;
@@ -14,7 +15,7 @@
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 10px;
-            color: #1e293b;
+            color: #111;
             line-height: 1.5;
         }
 
@@ -22,49 +23,49 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #6366f1;
+            border-bottom: 2px solid #111;
         }
 
         .header h1 {
             font-size: 18px;
             font-weight: 800;
             margin-bottom: 2px;
+            color: #111;
         }
 
         .header h2 {
             font-size: 13px;
             font-weight: 600;
-            color: #6366f1;
+            color: #333;
             margin-bottom: 4px;
         }
 
         .header .date {
             font-size: 10px;
-            color: #94a3b8;
+            color: #555;
         }
 
         .info {
             text-align: center;
             font-size: 11px;
-            color: #64748b;
+            color: #333;
             margin-bottom: 12px;
         }
 
         .info strong {
-            color: #1e293b;
+            color: #111;
         }
 
         .formula-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
+            background: #f5f5f5;
+            border: 1px solid #aaa;
             padding: 10px 16px;
             margin-bottom: 16px;
             font-size: 10px;
         }
 
         .formula-box strong {
-            color: #6366f1;
+            color: #111;
         }
 
         table.main {
@@ -74,20 +75,20 @@
         }
 
         table.main th {
-            background: #f8fafc;
+            background: #eee;
             font-size: 8px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #64748b;
+            color: #111;
             padding: 6px 8px;
             text-align: center;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #aaa;
         }
 
         table.main td {
             padding: 6px 8px;
             font-size: 9px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #ccc;
             text-align: center;
         }
 
@@ -97,31 +98,34 @@
         }
 
         table.main td.ma {
-            background: #eff6ff;
+            background: #eee;
             font-weight: 700;
-            color: #6366f1;
+            color: #111;
         }
 
         table.main td.rekomendasi {
-            background: #f0fdf4;
+            background: #ddd;
             font-weight: 700;
-            color: #16a34a;
+            color: #111;
         }
 
-        .text-right {
-            text-align: right;
+        table.main th.th-ma {
+            background: #ddd;
         }
 
-        .text-center {
-            text-align: center;
+        table.main th.th-rek {
+            background: #ccc;
         }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
 
         .footer {
             margin-top: 30px;
             text-align: center;
             font-size: 9px;
-            color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
+            color: #555;
+            border-top: 1px solid #aaa;
             padding-top: 10px;
         }
     </style>
@@ -157,8 +161,8 @@
                     <th>{{ $week['label'] }}<br><span style="font-weight: 400; font-size: 7px;">{{ $week['range'] }}</span>
                     </th>
                 @endforeach
-                <th style="background: #eff6ff;">MA</th>
-                <th style="background: #f0fdf4;">Rekomendasi</th>
+                <th class="th-ma">MA</th>
+                <th class="th-rek">Rekomendasi</th>
             </tr>
         </thead>
         <tbody>
@@ -189,14 +193,14 @@
 
     {{-- Calculation Detail Section --}}
     @if($data->count() > 0)
-        <div style="margin-top: 16px; font-size: 9px; color: #64748b;">
-            <strong style="color: #1e293b;">Detail Perhitungan:</strong>
+        <div style="margin-top: 16px; font-size: 9px; color: #555;">
+            <strong style="color: #111;">Detail Perhitungan:</strong>
             @foreach($data as $item)
                 <div style="margin-top: 4px;">
                     <strong>{{ $item['produk']->nama_produk }}:</strong>
                     MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} = <strong
-                        style="color: #6366f1;">{{ number_format($item['ma'], 2) }}</strong>
-                    → Rekomendasi: <strong style="color: #16a34a;">{{ $item['rekomendasi'] }}</strong>
+                        style="color: #111;">{{ number_format($item['ma'], 2) }}</strong>
+                    → Rekomendasi: <strong style="color: #111;">{{ $item['rekomendasi'] }}</strong>
                     {{ $item['produk']->unit_kecil ?? 'pcs' }}
                 </div>
             @endforeach
