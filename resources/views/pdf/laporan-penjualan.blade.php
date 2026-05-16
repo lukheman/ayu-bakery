@@ -19,7 +19,7 @@
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
-            color: #111;
+            color: #000;
             line-height: 1.5;
         }
 
@@ -27,73 +27,71 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #111;
+            border-bottom: 2px solid #000;
         }
 
         .header h1 {
             font-size: 18px;
             font-weight: 800;
             margin-bottom: 2px;
-            color: #111;
+            color: #000;
         }
 
         .header h2 {
             font-size: 13px;
             font-weight: 600;
-            color: #333;
+            color: #000;
             margin-bottom: 4px;
         }
 
         .header .date {
             font-size: 10px;
-            color: #555;
+            color: #000;
         }
 
         .period {
             text-align: left;
             font-size: 12px;
-            color: #333;
+            color: #000;
             margin-bottom: 16px;
-            margin-left: 20px;
         }
 
         .order-group {
-            margin: 20px;
+            margin-bottom: 20px;
             page-break-inside: avoid;
         }
 
         .section-title {
             font-size: 12px;
             font-weight: 800;
-            color: #111;
+            color: #000;
             padding-bottom: 4px;
             margin-bottom: 12px;
             clear: both;
-            margin-left: 20px;
         }
 
         table.main {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #aaa;
+            border: 1px solid #000;
         }
 
         table.main th {
-            background: #eee;
+            background: #fff;
             font-size: 8px;
             font-weight: 700;
             text-transform: uppercase;
-            color: #111;
-            padding: 5px 8px;
-            border-bottom: 1px solid #aaa;
-            border-right: 1px solid #ccc;
+            color: #000;
+            padding: 8px;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
         }
 
         table.main td {
-            padding: 5px 8px;
+            padding: 8px;
             font-size: 9px;
-            border-bottom: 1px solid #ccc;
-            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
         }
 
         .text-right {
@@ -109,25 +107,24 @@
         }
 
         .text-muted {
-            color: #555;
+            color: #000;
         }
 
         .text-primary {
-            color: #111;
+            color: #000;
         }
 
         .text-success {
-            color: #111;
+            color: #000;
         }
 
         .footer {
             margin-top: 30px;
             text-align: right;
             font-size: 9px;
-            color: #555;
-            border-top: 1px solid #aaa;
+            color: #000;
+            border-top: 1px solid #000;
             padding-top: 10px;
-            margin-right: 20px;
         }
 
         .page-break {
