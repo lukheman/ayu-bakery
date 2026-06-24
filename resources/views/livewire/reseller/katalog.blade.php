@@ -139,41 +139,9 @@
                     </div>
 
                     <div class="mb-4">
-                        @if($modalProduk->unit_besar && $modalProduk->tingkat_konversi > 1)
-                            <div class="row g-2" x-data="{ 
-                                qtyKecil: @entangle('qty'),
-                                konversi: {{ $modalProduk->tingkat_konversi }},
-                                updateKecil(val) {
-                                    let newQty = val ? Math.floor(parseFloat(val) * this.konversi) : '';
-                                    if (this.qtyKecil !== newQty) {
-                                        this.qtyKecil = newQty;
-                                    }
-                                },
-                                updateBesar(val) {
-                                    let newBesar = val ? (val / this.konversi) : '';
-                                    if (parseFloat($refs.inputBesar.value || 0) !== parseFloat(newBesar || 0)) {
-                                        $refs.inputBesar.value = newBesar;
-                                    }
-                                }
-                            }" x-init="
-                                $watch('qtyKecil', value => updateBesar(value));
-                                updateBesar(qtyKecil);
-                            ">
-                                <div class="col-6">
-                                    <label for="qty_besar" class="form-label">Jumlah ({{ $modalProduk->unit_besar }})</label>
-                                    <input type="number" class="form-control" id="qty_besar" x-ref="inputBesar" @input="updateKecil($event.target.value)" min="0" max="{{ $modalProduk->total_stok / $modalProduk->tingkat_konversi }}" step="any">
-                                </div>
-                                <div class="col-6">
-                                    <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
-                                    <input type="number" class="form-control" id="qty" x-model="qtyKecil" @input="updateBesar($event.target.value)" min="1" max="{{ $modalProduk->total_stok }}">
-                                </div>
-                            </div>
-                            @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
-                        @else
-                            <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
-                            <input type="number" class="form-control" id="qty" wire:model="qty" min="1" max="{{ $modalProduk->total_stok }}" value="1">
-                            @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
-                        @endif
+                        <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
+                        <input type="number" class="form-control" id="qty" wire:model="qty" min="1" max="{{ $modalProduk->total_stok }}" value="1">
+                        @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
