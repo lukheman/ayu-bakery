@@ -10,7 +10,6 @@ use App\Livewire\AdminToko\PesananManagement;
 use App\Livewire\AdminToko\ProdukManagement;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Livewire\Guest\LandingPage;
 use App\Livewire\Kasir\PointOfSale;
 use App\Livewire\Kasir\Profil as KasirProfil;
 use App\Livewire\Kasir\RiwayatPenjualan;
@@ -28,7 +27,7 @@ use App\Livewire\Reseller\Profil as ResellerProfil;
 use Illuminate\Support\Facades\Route;
 
 // Guest Routes
-Route::get('/', LandingPage::class)->name('home');
+Route::view('/', 'landing')->name('home');
 
 // Auth Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

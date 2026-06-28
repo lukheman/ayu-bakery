@@ -1,4 +1,4 @@
-<div>
+@component('layouts.guest')
     {{-- Hero Section --}}
     <section
         style="min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; padding-top: 80px; background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 50%, #fff1f2 100%);">
@@ -228,7 +228,7 @@
         </div>
     </section>
 
-    <x-slot:styles>
+    @slot('styles')
         <style>
             @keyframes heroFloat {
 
@@ -268,5 +268,5 @@
                 }
             }
         </style>
-    </x-slot:styles>
-</div>
+    @endslot
+@endcomponent
