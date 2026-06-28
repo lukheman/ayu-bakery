@@ -1,71 +1,57 @@
 <?php
 
-namespace App\Livewire\Auth;
+namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\Kurir;
 use App\Models\Reseller;
 use App\Models\KeranjangBelanja;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-use Livewire\Component;
 
-#[Layout('layouts.guest')]
-#[Title('Daftar - Ayu Bakery')]
-class Register extends Component
+class RegisterController extends Controller
 {
-    public string $role = 'reseller'; // 'reseller' | 'kurir'
-
-    public string $nama = '';
-    public string $email = '';
-    public string $password = '';
-    public string $password_confirmation = '';
-    public string $no_hp = '';
-    public string $alamat = '';
-
-    public bool $agree_terms = false;
-
-    protected function rules(): array
+    public function showRegistrationForm(Request $request)
     {
-        $emailTable = $this->role === 'kurir' ? 'kurir' : 'reseller';
+        $role = $request->query('role', 'reseller');
+        if (!in_array($role, ['reseller', 'kurir'])) {
+            $role = 'reseller';
+        }
+        return view('auth.register', ['type' => 'auth', 'role' => $role]);
+    }
 
-        return [
+    public function register(Request $request)
+    {
+        $role = $request->input('role');
+        $emailTable = $role === 'kurir' ? 'kurir' : 'reseller';
+
+        $validated = $request->validate([
             'role' => ['required', 'in:reseller,kurir'],
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:' . $emailTable . ',email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'no_hp' => ['nullable', 'string', 'max:20'],
-            'alamat' => $this->role === 'reseller'
+            'alamat' => $role === 'reseller'
                 ? ['nullable', 'string', 'max:500']
                 : ['nullable', 'string', 'max:500'],
             'agree_terms' => ['accepted'],
-        ];
-    }
+        ], [
+            'nama.required' => 'Nama lengkap tidak boleh kosong.',
+            'nama.max' => 'Nama lengkap maksimal 255 karakter.',
+            'email.required' => 'Email tidak boleh kosong.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'password.required' => 'Password tidak boleh kosong.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'no_hp.max' => 'Nomor HP maksimal 20 karakter.',
+            'alamat.max' => 'Alamat maksimal 500 karakter.',
+            'agree_terms.accepted' => 'Anda harus menyetujui syarat dan ketentuan.',
+        ]);
 
-    protected $messages = [
-        'agree_terms.accepted' => 'Anda harus menyetujui syarat dan ketentuan.',
-        'email.unique' => 'Email sudah terdaftar.',
-        'password.confirmed' => 'Konfirmasi password tidak cocok.',
-    ];
-
-    public function updatedRole(): void
-    {
-        $this->resetValidation();
-    }
-
-    public function setRole(string $role): void
-    {
-        $this->role = $role;
-        $this->resetValidation();
-    }
-
-    public function submit()
-    {
-        $validated = $this->validate();
-
-        if ($this->role === 'kurir') {
+        if ($role === 'kurir') {
             $user = Kurir::create([
                 'nama' => $validated['nama'],
                 'email' => $validated['email'],
@@ -74,7 +60,7 @@ class Register extends Component
             ]);
 
             Auth::guard('kurir')->login($user);
-            session()->regenerate();
+            $request->session()->regenerate();
 
             return redirect()->route('kurir.pesanan');
         }
@@ -93,14 +79,8 @@ class Register extends Component
         ]);
 
         Auth::guard('reseller')->login($user);
-        session()->regenerate();
+        $request->session()->regenerate();
 
         return redirect()->route('reseller.katalog');
-    }
-
-    public function render()
-    {
-        return view('livewire.auth.register')
-            ->layoutData(['type' => 'auth']);
     }
 }

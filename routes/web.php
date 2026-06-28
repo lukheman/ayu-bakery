@@ -8,8 +8,8 @@ use App\Livewire\Admin\UserManagement;
 use App\Livewire\AdminToko\PersediaanManagement;
 use App\Livewire\AdminToko\PesananManagement;
 use App\Livewire\AdminToko\ProdukManagement;
-use App\Livewire\Auth\Login;
-use App\Livewire\Auth\Register;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Livewire\Guest\LandingPage;
 use App\Livewire\Kasir\PointOfSale;
 use App\Livewire\Kasir\Profil as KasirProfil;
@@ -31,8 +31,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', LandingPage::class)->name('home');
 
 // Auth Routes
-Route::get('/login', Login::class)->name('login');
-Route::get('/register', Register::class)->name('register');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 
 Route::prefix('admintoko')->middleware('auth:admin_toko,pemilik_toko,kasir,reseller,kurir')->group(function () {
     Route::get('/users', UserManagement::class)->name('admintoko.users');

@@ -1,3 +1,4 @@
+@component('layouts.guest', ['type' => 'auth'])
 <div class="auth-container">
     <div class="auth-card">
         {{-- Brand --}}
@@ -10,21 +11,22 @@
         </div>
 
         {{-- Login Form --}}
-        <form wire:submit="submit">
+        <form method="POST" action="{{ route('login.post') }}">
+            @csrf
             {{-- Role Selector --}}
             <div class="form-group">
                 <label>Login Sebagai</label>
                 <div class="input-wrapper">
                     <i class="fas fa-user-tag input-icon"></i>
-                    <select wire:model="role" class="@error('role') is-invalid @enderror" id="role">
+                    <select name="role" class="@error('role') is-invalid @enderror" id="role">
                         <option value="">-- Pilih Role --</option>
-                        @foreach($this->roleOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
+                        @foreach($roleOptions as $value => $label)
+                            <option value="{{ $value }}" {{ old('role') == $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 @error('role')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
 
@@ -33,11 +35,11 @@
                 <label>Email</label>
                 <div class="input-wrapper">
                     <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" wire:model="email" class="@error('email') is-invalid @enderror" id="email"
+                    <input type="email" name="email" value="{{ old('email') }}" class="@error('email') is-invalid @enderror" id="email"
                         placeholder="Masukkan email Anda" autofocus>
                 </div>
                 @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
 
@@ -46,31 +48,28 @@
                 <label>Password</label>
                 <div class="input-wrapper">
                     <i class="fas fa-lock input-icon"></i>
-                    <input type="password" wire:model="password" class="@error('password') is-invalid @enderror"
+                    <input type="password" name="password" class="@error('password') is-invalid @enderror"
                         id="password" placeholder="Masukkan password">
                     <button type="button" class="password-toggle" onclick="togglePassword()">
                         <i class="fas fa-eye" id="toggleIcon"></i>
                     </button>
                 </div>
                 @error('password')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
 
             {{-- Remember Me --}}
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
                 <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" wire:model="remember" id="remember">
+                    <input class="form-check-input" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} id="remember">
                     <label class="form-check-label" for="remember">Ingat saya</label>
                 </div>
             </div>
 
             {{-- Submit --}}
-            <button type="submit" class="btn-auth" wire:loading.attr="disabled">
-                <span wire:loading.remove>Masuk <i class="fas fa-arrow-right"></i></span>
-                <span wire:loading>
-                    <i class="fas fa-spinner fa-spin me-2"></i> Memproses...
-                </span>
+            <button type="submit" class="btn-auth">
+                <span>Masuk <i class="fas fa-arrow-right"></i></span>
             </button>
         </form>
 
@@ -94,3 +93,4 @@
         }
     }
 </script>
+@endcomponent

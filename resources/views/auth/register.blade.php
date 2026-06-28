@@ -1,3 +1,4 @@
+@component('layouts.guest', ['type' => 'auth'])
 <div class="auth-container" style="max-width: 800px;">
     <div class="auth-card">
         {{-- Brand --}}
@@ -11,14 +12,14 @@
 
         {{-- Role Selector --}}
         <div class="role-selector">
-            <button type="button" wire:click="setRole('reseller')"
-                class="role-option {{ $role === 'reseller' ? 'active' : '' }}">
+            <a href="{{ route('register', ['role' => 'reseller']) }}"
+                class="role-option {{ $role === 'reseller' ? 'active' : '' }}" style="text-decoration: none;">
                 <i class="fas fa-users"></i> Reseller
-            </button>
-            <button type="button" wire:click="setRole('kurir')"
-                class="role-option {{ $role === 'kurir' ? 'active' : '' }}">
+            </a>
+            <a href="{{ route('register', ['role' => 'kurir']) }}"
+                class="role-option {{ $role === 'kurir' ? 'active' : '' }}" style="text-decoration: none;">
                 <i class="fas fa-motorcycle"></i> Kurir
-            </button>
+            </a>
         </div>
 
         {{-- Role Description --}}
@@ -37,7 +38,9 @@
         </div>
 
         {{-- Register Form --}}
-        <form wire:submit="submit">
+        <form method="POST" action="{{ route('register.post') }}">
+            @csrf
+            <input type="hidden" name="role" value="{{ $role }}">
             <div class="row">
                 <div class="col-md-6">
                     {{-- Nama --}}
@@ -45,11 +48,11 @@
                         <label>Nama Lengkap</label>
                         <div class="input-wrapper">
                             <i class="fas fa-user input-icon"></i>
-                            <input type="text" wire:model="nama" class="@error('nama') is-invalid @enderror" id="nama"
+                            <input type="text" name="nama" value="{{ old('nama') }}" class="@error('nama') is-invalid @enderror" id="nama"
                                 placeholder="Masukkan nama lengkap" autofocus>
                         </div>
                         @error('nama')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -58,11 +61,11 @@
                         <label>Email</label>
                         <div class="input-wrapper">
                             <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" wire:model="email" class="@error('email') is-invalid @enderror"
+                            <input type="email" name="email" value="{{ old('email') }}" class="@error('email') is-invalid @enderror"
                                 id="email" placeholder="Masukkan email Anda">
                         </div>
                         @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -71,11 +74,11 @@
                         <label>No. HP <span style="color: #94a3b8; font-weight: 400;">(opsional)</span></label>
                         <div class="input-wrapper">
                             <i class="fas fa-phone input-icon"></i>
-                            <input type="text" wire:model="no_hp" class="@error('no_hp') is-invalid @enderror"
+                            <input type="text" name="no_hp" value="{{ old('no_hp') }}" class="@error('no_hp') is-invalid @enderror"
                                 id="no_hp" placeholder="Contoh: 08123456789">
                         </div>
                         @error('no_hp')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
@@ -87,11 +90,11 @@
                             <label>Alamat <span style="color: #94a3b8; font-weight: 400;">(opsional)</span></label>
                             <div class="input-wrapper">
                                 <i class="fas fa-map-marker-alt input-icon"></i>
-                                <input type="text" wire:model="alamat" class="@error('alamat') is-invalid @enderror"
+                                <input type="text" name="alamat" value="{{ old('alamat') }}" class="@error('alamat') is-invalid @enderror"
                                     id="alamat" placeholder="Alamat lengkap Anda">
                             </div>
                             @error('alamat')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
                     @endif
@@ -101,14 +104,14 @@
                         <label>Password</label>
                         <div class="input-wrapper">
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" wire:model="password" class="@error('password') is-invalid @enderror"
+                            <input type="password" name="password" class="@error('password') is-invalid @enderror"
                                 id="password" placeholder="Minimal 8 karakter">
                             <button type="button" class="password-toggle" onclick="togglePwd('password', 'pwdIcon1')">
                                 <i class="fas fa-eye" id="pwdIcon1"></i>
                             </button>
                         </div>
                         @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -117,7 +120,7 @@
                         <label>Konfirmasi Password</label>
                         <div class="input-wrapper">
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" wire:model="password_confirmation" id="password_confirmation"
+                            <input type="password" name="password_confirmation" id="password_confirmation"
                                 placeholder="Ulangi password">
                             <button type="button" class="password-toggle"
                                 onclick="togglePwd('password_confirmation', 'pwdIcon2')">
@@ -131,7 +134,7 @@
             {{-- Terms --}}
             <div class="form-check" style="margin-bottom: 1.25rem;">
                 <input class="form-check-input @error('agree_terms') is-invalid @enderror" type="checkbox"
-                    wire:model="agree_terms" id="agree_terms">
+                    name="agree_terms" value="1" {{ old('agree_terms') ? 'checked' : '' }} id="agree_terms">
                 <label class="form-check-label" for="agree_terms">
                     Saya menyetujui <a href="#" style="color: #e11d48; text-decoration: none; font-weight: 600;">Syarat
                         & Ketentuan</a>
@@ -142,13 +145,10 @@
             </div>
 
             {{-- Submit --}}
-            <button type="submit" class="btn-auth" wire:loading.attr="disabled">
-                <span wire:loading.remove>
+            <button type="submit" class="btn-auth">
+                <span>
                     Daftar sebagai {{ $role === 'reseller' ? 'Reseller' : 'Kurir' }}
                     <i class="fas fa-arrow-right"></i>
-                </span>
-                <span wire:loading>
-                    <i class="fas fa-spinner fa-spin me-2"></i> Mendaftar...
                 </span>
             </button>
         </form>
@@ -173,3 +173,4 @@
         }
     }
 </script>
+@endcomponent
