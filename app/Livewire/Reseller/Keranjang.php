@@ -16,6 +16,7 @@ use Livewire\Component;
 class Keranjang extends Component
 {
     public string $catatan = '';
+    public string $metode_pembayaran = 'tunai';
     public bool $showCheckoutModal = false;
     public array $selectedItems = [];
 
@@ -134,6 +135,19 @@ class Keranjang extends Component
                 'created_at' => now(),
             ]);
         }
+
+        $totalBayar = collect($selectedCartItems)->sum(function($item) {
+            return $item->jumlah * ($item->produk->harga_jual_satuan ?? 0);
+        });
+
+        \App\Models\Transaksi::create([
+            'id_pesanan' => $pesanan->id,
+            'metode_pembayaran' => $this->metode_pembayaran,
+            'total_bayar' => $totalBayar,
+            'status_pembayaran' => \App\Enums\StatusPembayaran::BELUM_BAYAR,
+            'status_pengiriman' => \App\Enums\StatusPengiriman::MENUNGGU,
+            'tanggal' => now(),
+        ]);
 
         // Delete the checked-out items from the cart
         ItemKeranjang::whereIn('id', $this->selectedItems)

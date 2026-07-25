@@ -138,26 +138,70 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
-                        <input type="number" class="form-control" id="qty" wire:model="qty" min="1" max="{{ $modalProduk->total_stok }}" value="1">
-                        @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
-                    </div>
+                    @if(!$isDirectOrder)
+                        <div class="mb-4">
+                            <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
+                            <input type="number" class="form-control" id="qty" wire:model="qty" min="1" max="{{ $modalProduk->total_stok }}" value="1">
+                            @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
+                        </div>
 
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500; padding: 0.6rem 1.25rem;"
-                            wire:click="closeCartModal">
-                            Batal
-                        </button>
-                        <button type="button" class="btn" style="background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem;"
-                            wire:click="addToCart">
-                            <i class="fas fa-cart-plus me-1"></i> Keranjang
-                        </button>
-                        <button type="button" class="btn" style="background: var(--success-color); color: white; border: none; border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem;"
-                            wire:click="directOrder">
-                            <i class="fas fa-shopping-bag me-1"></i> Pesan Langsung
-                        </button>
-                    </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500; padding: 0.6rem 1.25rem;"
+                                wire:click="closeCartModal">
+                                Batal
+                            </button>
+                            <button type="button" class="btn" style="background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem;"
+                                wire:click="addToCart">
+                                <i class="fas fa-cart-plus me-1"></i> Keranjang
+                            </button>
+                            <button type="button" class="btn" style="background: var(--success-color); color: white; border: none; border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem;"
+                                wire:click="processDirectOrder">
+                                <i class="fas fa-shopping-bag me-1"></i> Pesan Langsung
+                            </button>
+                        </div>
+                    @else
+                        {{-- Review Pesanan --}}
+                        <div class="mb-4 p-3" style="background: rgba(99,102,241,0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">Jumlah Dipesan</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">{{ $qty }} {{ $modalProduk->unit_kecil ?? 'pcs' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">Total Harga</span>
+                                <span style="font-weight: 700; color: var(--primary-color);">Rp {{ number_format($qty * $modalProduk->harga_jual_satuan, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Metode Pembayaran --}}
+                        <div class="mb-4">
+                            <label class="form-label" style="font-size: 0.9rem; font-weight: 600;">Pilih Metode Pembayaran</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="metode_katalog" id="tunai_katalog" value="tunai" wire:model="metode_pembayaran">
+                                    <label class="form-check-label" for="tunai_katalog">
+                                        <i class="fas fa-money-bill-wave me-1" style="color: var(--success-color);"></i> Tunai
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="metode_katalog" id="transfer_katalog" value="transfer" wire:model="metode_pembayaran">
+                                    <label class="form-check-label" for="transfer_katalog">
+                                        <i class="fas fa-exchange-alt me-1" style="color: var(--primary-color);"></i> Transfer
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500; padding: 0.6rem 1.25rem;"
+                                wire:click="$set('isDirectOrder', false)">
+                                <i class="fas fa-arrow-left me-1"></i> Kembali
+                            </button>
+                            <button type="button" class="btn" style="background: var(--success-color); color: white; border: none; border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem;"
+                                wire:click="directOrder">
+                                <i class="fas fa-check me-1"></i> Konfirmasi Pesanan
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
         @endif

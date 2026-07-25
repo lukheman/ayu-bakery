@@ -141,6 +141,25 @@
                         <hr style="border-color: var(--border-color);">
                     @endif
 
+                    {{-- Metode Pembayaran --}}
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.9rem; font-weight: 600;">Metode Pembayaran</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check custom-radio">
+                                <input class="form-check-input" type="radio" name="metode" id="tunai" value="tunai" wire:model="metode_pembayaran">
+                                <label class="form-check-label" for="tunai">
+                                    <i class="fas fa-money-bill-wave me-1" style="color: var(--success-color);"></i> Tunai
+                                </label>
+                            </div>
+                            <div class="form-check custom-radio">
+                                <input class="form-check-input" type="radio" name="metode" id="transfer" value="transfer" wire:model="metode_pembayaran">
+                                <label class="form-check-label" for="transfer">
+                                    <i class="fas fa-exchange-alt me-1" style="color: var(--primary-color);"></i> Transfer
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Catatan --}}
                     <div class="mb-4">
                         <label for="catatan" class="form-label" style="font-size: 0.9rem;">Catatan (opsional)</label>

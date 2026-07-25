@@ -177,6 +177,60 @@
                     </span>
                 </div>
 
+                {{-- Payment Info --}}
+                @if($detailPesanan->transaksi)
+                    <div class="d-flex justify-content-between py-2" style="border-top: 1px dashed var(--border-color);">
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">Metode Pembayaran</span>
+                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); text-transform: capitalize;">
+                            {{ $detailPesanan->transaksi->metode_pembayaran }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 mb-2">
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">Status Pembayaran</span>
+                        @php
+                            $statusBayar = \App\Enums\StatusPembayaran::tryFrom($detailPesanan->transaksi->status_pembayaran);
+                        @endphp
+                        @if($statusBayar)
+                            <span style="font-size: 0.8rem; padding: 4px 10px; border-radius: 50px; font-weight: 600;
+                                background: rgba({{ $statusBayar->color() === 'warning' ? '245,158,11' : ($statusBayar->color() === 'success' ? '16,185,129' : '239,68,68') }}, 0.1);
+                                color: var(--{{ $statusBayar->color() }}-color);">
+                                <i class="{{ $statusBayar->icon() }} me-1"></i> {{ $statusBayar->label() }}
+                            </span>
+                        @else
+                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
+                                {{ $detailPesanan->transaksi->status_pembayaran }}
+                            </span>
+                        @endif
+                    </div>
+
+                    {{-- Upload Bukti --}}
+                    @if($detailPesanan->transaksi->metode_pembayaran === 'transfer' && $detailPesanan->transaksi->status_pembayaran === 'belum_bayar')
+                        <div class="p-3 mb-3" style="background: rgba(99,102,241,0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
+                            <h6 style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem;">Upload Bukti Pembayaran</h6>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Silakan upload bukti transfer Anda agar pesanan dapat diproses.</p>
+                            
+                            <form wire:submit="uploadBukti">
+                                <input type="file" wire:model="bukti_pembayaran" class="form-control mb-2" style="font-size: 0.85rem;" accept="image/*">
+                                @error('bukti_pembayaran') <span class="text-danger d-block mb-2" style="font-size: 0.8rem;">{{ $message }}</span> @enderror
+                                
+                                <button type="submit" class="btn w-100"
+                                    style="background: var(--primary-color); color: white; border-radius: 8px; font-weight: 600; font-size: 0.9rem; padding: 0.5rem;"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove wire:target="uploadBukti">Upload Bukti</span>
+                                    <span wire:loading wire:target="uploadBukti"><i class="fas fa-spinner fa-spin me-1"></i> Mengunggah...</span>
+                                </button>
+                            </form>
+                        </div>
+                    @elseif($detailPesanan->transaksi->bukti_pembayaran)
+                        <div class="p-3 mb-3" style="background: var(--bg-tertiary); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">Bukti Pembayaran</span>
+                            <a href="{{ Storage::url($detailPesanan->transaksi->bukti_pembayaran) }}" target="_blank" class="btn btn-sm" style="background: var(--primary-color); color: white; border-radius: 6px; font-size: 0.8rem;">
+                                <i class="fas fa-external-link-alt me-1"></i> Lihat
+                            </a>
+                        </div>
+                    @endif
+                @endif
+
                 {{-- Cancel Action --}}
                 @if($detailPesanan->status === 'pending')
                     <div class="d-flex justify-content-end mt-3">

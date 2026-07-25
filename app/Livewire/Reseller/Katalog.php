@@ -24,8 +24,10 @@ class Katalog extends Component
     public string $search = '';
 
     public int $qty = 1;
+    public string $metode_pembayaran = 'tunai';
     public ?int $selectedProdukId = null;
     public bool $showCartModal = false;
+    public bool $isDirectOrder = false;
 
     public function updatedSearch(): void
     {
@@ -36,12 +38,14 @@ class Katalog extends Component
     {
         $this->selectedProdukId = $produkId;
         $this->qty = 1;
+        $this->isDirectOrder = false;
         $this->showCartModal = true;
     }
 
     public function closeCartModal(): void
     {
         $this->showCartModal = false;
+        $this->isDirectOrder = false;
         $this->selectedProdukId = null;
         $this->qty = 1;
     }
@@ -95,6 +99,11 @@ class Katalog extends Component
         session()->flash('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
+    public function processDirectOrder(): void
+    {
+        $this->isDirectOrder = true;
+    }
+
     public function directOrder(): void
     {
         $reseller = auth('reseller')->user();
@@ -140,6 +149,16 @@ class Katalog extends Component
             'harga_satuan' => $hargaSatuan,
             'subtotal' => $qty * $hargaSatuan,
             'created_at' => now(),
+        ]);
+
+        // Create transaksi
+        \App\Models\Transaksi::create([
+            'id_pesanan' => $pesanan->id,
+            'metode_pembayaran' => $this->metode_pembayaran,
+            'total_bayar' => $qty * $hargaSatuan,
+            'status_pembayaran' => \App\Enums\StatusPembayaran::BELUM_BAYAR,
+            'status_pengiriman' => \App\Enums\StatusPengiriman::MENUNGGU,
+            'tanggal' => now(),
         ]);
 
         $this->closeCartModal();

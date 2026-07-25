@@ -35,6 +35,9 @@ class PesananManagement extends Component
     public ?int $selectedKurirId = null;
     public string $selectedStatusPengiriman = '';
 
+    public bool $showBuktiModal = false;
+    public ?string $selectedBuktiUrl = null;
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -206,6 +209,30 @@ class PesananManagement extends Component
 
         $this->closeDeliveryModal();
         session()->flash('success', 'Status pengiriman berhasil diperbarui.');
+    }
+
+    public function markAsPaid(int $id): void
+    {
+        $pesanan = Pesanan::with('transaksi')->find($id);
+        
+        if ($pesanan && $pesanan->transaksi) {
+            $pesanan->transaksi->update([
+                'status_pembayaran' => \App\Enums\StatusPembayaran::LUNAS->value
+            ]);
+            session()->flash('success', 'Pembayaran berhasil dikonfirmasi (Lunas).');
+        }
+    }
+
+    public function openBuktiModal(string $url): void
+    {
+        $this->selectedBuktiUrl = $url;
+        $this->showBuktiModal = true;
+    }
+
+    public function closeBuktiModal(): void
+    {
+        $this->showBuktiModal = false;
+        $this->selectedBuktiUrl = null;
     }
 
     public function render()

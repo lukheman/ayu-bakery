@@ -9,18 +9,20 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 #[Title('Pesanan Saya - Ayu Bakery')]
 #[Layout('layouts.reseller')]
 class PesananSaya extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     #[Url(as: 'status')]
     public string $filterStatus = '';
 
     public ?int $detailPesananId = null;
     public bool $showDetailModal = false;
+    public $bukti_pembayaran;
 
     public function updatedFilterStatus(): void
     {
@@ -53,6 +55,29 @@ class PesananSaya extends Component
         }
 
         $this->closeDetail();
+    }
+
+    public function uploadBukti(): void
+    {
+        $this->validate([
+            'bukti_pembayaran' => 'required|image|max:2048', // max 2MB
+        ]);
+
+        $reseller = auth('reseller')->user();
+        $pesanan = Pesanan::with('transaksi')->where('id', $this->detailPesananId)
+            ->where('id_reseller', $reseller->id)
+            ->first();
+
+        if ($pesanan && $pesanan->transaksi) {
+            $path = $this->bukti_pembayaran->store('bukti_pembayaran', 'public');
+            
+            $pesanan->transaksi->update([
+                'bukti_pembayaran' => $path,
+            ]);
+
+            session()->flash('success', 'Bukti pembayaran berhasil diunggah.');
+            $this->reset('bukti_pembayaran');
+        }
     }
 
     public function render()

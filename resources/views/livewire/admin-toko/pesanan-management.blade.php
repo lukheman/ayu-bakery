@@ -48,6 +48,7 @@
                         <th>Tanggal</th>
                         <th>Item</th>
                         <th>Total Bayar</th>
+                        <th>Pembayaran</th>
                         <th>Status</th>
                         <th>Pengiriman</th>
                         <th class="text-end">Aksi</th>
@@ -69,7 +70,25 @@
                             </td>
                             <td>{{ $pesanan->created_at->format('d M Y H:i') }}</td>
                             <td>{{ $totalItem }} pcs</td>
-                            <td class="fw-semibold">Rp {{ number_format($totalBayar, 0, ',', '.') }}</td>
+                            <td class="fw-semibold">
+                                <div>Rp {{ number_format($totalBayar, 0, ',', '.') }}</div>
+                            </td>
+                            <td>
+                                @if($transaksi)
+                                    <div style="font-size: 0.85rem; font-weight: 600; text-transform: capitalize; color: var(--text-primary);">
+                                        {{ $transaksi->metode_pembayaran }}
+                                    </div>
+                                    @if($transaksi->bukti_pembayaran)
+                                        <button wire:click="openBuktiModal('{{ Storage::url($transaksi->bukti_pembayaran) }}')" class="badge mt-1" style="background: rgba(99,102,241,0.1); color: var(--primary-color); border: none; padding: 0.4em 0.6em; border-radius: 4px; display: inline-block;">
+                                            <i class="fas fa-image me-1"></i>Lihat Bukti
+                                        </button>
+                                    @elseif($transaksi->metode_pembayaran === 'transfer')
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Belum upload</div>
+                                    @endif
+                                @else
+                                    <span class="text-muted" style="font-size: 0.85rem;">-</span>
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge" style="background: rgba(var(--bs-{{ $statusEnum->color() }}-rgb), 0.1); color: var(--{{ $statusEnum->color() }}-color); padding: 0.5em 0.8em; border-radius: 6px; font-weight: 600;">
                                     <i class="{{ $statusEnum->icon() }} me-1"></i> {{ $statusEnum->label() }}
@@ -110,6 +129,11 @@
                                         <button wire:click="openDeliveryModal({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(99,102,241,0.1); color: var(--primary-color);" title="Atur Pengiriman">
                                             <i class="fas fa-truck"></i> Pengiriman
                                         </button>
+                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR->value)
+                                            <button wire:click="markAsPaid({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Konfirmasi Lunas">
+                                                <i class="fas fa-money-check-alt"></i> Lunas
+                                            </button>
+                                        @endif
                                     @elseif ($pesanan->status === \App\Enums\StatusPesanan::SELESAI->value && $pesanan->kode_konfirmasi)
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
@@ -120,7 +144,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <div class="text-muted mb-2"><i class="fas fa-inbox fa-3x"></i></div>
                                 <h6 style="color: var(--text-primary);">Tidak ada pesanan ditemukan</h6>
                             </td>
@@ -173,6 +197,28 @@
                 <div class="d-flex justify-content-end gap-2">
                     <button class="btn" wire:click="closeDeliveryModal" style="background: var(--bg-tertiary); color: var(--text-secondary); font-weight: 600;">Batal</button>
                     <button class="btn" wire:click="updateDelivery" style="background: var(--primary-color); color: white; font-weight: 600;">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Bukti Pembayaran --}}
+    @if($showBuktiModal)
+        <div class="modal-backdrop-custom d-flex align-items-center justify-content-center" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1060; animation: fadeIn 0.2s ease-out;" wire:click.self="closeBuktiModal">
+            <div class="modal-content-custom position-relative" style="background: var(--bg-secondary); border-radius: 12px; padding: 1rem; width: auto; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2);" wire:click.stop>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0" style="font-weight: 600; color: var(--text-primary);">Bukti Pembayaran</h5>
+                    <button class="btn btn-sm" wire:click="closeBuktiModal" style="background: rgba(239,68,68,0.1); color: var(--danger-color); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div style="flex: 1; overflow: auto; text-align: center; background: var(--bg-tertiary); border-radius: 8px;">
+                    <img src="{{ $selectedBuktiUrl }}" alt="Bukti Pembayaran" style="max-width: 100%; max-height: 75vh; object-fit: contain;">
+                </div>
+                <div class="mt-3 text-end">
+                    <a href="{{ $selectedBuktiUrl }}" target="_blank" class="btn btn-sm" style="background: var(--primary-color); color: white; border-radius: 6px;">
+                        <i class="fas fa-external-link-alt me-1"></i> Buka Penuh
+                    </a>
                 </div>
             </div>
         </div>
