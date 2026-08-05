@@ -34,8 +34,8 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="stat-card" style="--accent-color: var(--primary-color); padding: 1.25rem;">
                 <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-color);">
-                    {{ number_format($totalDiproses) }}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Diproses</div>
+                    {{ number_format($totalDiterima) }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Aktif</div>
             </div>
         </div>
         <div class="col-xl-2 col-md-4 col-6">

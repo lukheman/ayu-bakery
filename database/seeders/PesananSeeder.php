@@ -30,7 +30,7 @@ class PesananSeeder extends Seeder
             $pesanan = Pesanan::factory()->create([
                 'id_reseller' => $keranjang->id_reseller,
                 'id_keranjang' => $keranjang->id,
-                'status' => fake()->randomElement([StatusPesanan::DIPROSES, StatusPesanan::SELESAI]),
+                'status' => fake()->randomElement([StatusPesanan::DIANTAR, StatusPesanan::SELESAI]),
             ]);
 
             // Create 1-3 order items

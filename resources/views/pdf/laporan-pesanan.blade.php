@@ -117,7 +117,9 @@
         }
 
         .badge-pending { border-color: #000; }
-        .badge-diproses { border-color: #000; }
+        .badge-diterima { border-color: #000; }
+        .badge-dipacking { border-color: #000; }
+        .badge-diantar { border-color: #000; }
         .badge-selesai { border-color: #000; font-weight: 700; }
         .badge-dibatalkan { border-color: #000; color: #000; }
 

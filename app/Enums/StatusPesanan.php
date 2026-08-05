@@ -5,7 +5,9 @@ namespace App\Enums;
 enum StatusPesanan: string
 {
     case PENDING = 'pending';
-    case DIPROSES = 'diproses';
+    case DITERIMA = 'diterima';
+    case DIPACKING = 'dipacking';
+    case DIANTAR = 'diantar';
     case SELESAI = 'selesai';
     case DIBATALKAN = 'dibatalkan';
 
@@ -17,8 +19,10 @@ enum StatusPesanan: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
-            self::DIPROSES => 'Diproses',
+            self::PENDING => 'Menunggu Konfirmasi',
+            self::DITERIMA => 'Diterima',
+            self::DIPACKING => 'Dipacking',
+            self::DIANTAR => 'Diantar',
             self::SELESAI => 'Selesai',
             self::DIBATALKAN => 'Dibatalkan',
         };
@@ -28,7 +32,9 @@ enum StatusPesanan: string
     {
         return match ($this) {
             self::PENDING => 'warning',
-            self::DIPROSES => 'primary',
+            self::DITERIMA => 'info',
+            self::DIPACKING => 'primary',
+            self::DIANTAR => 'indigo', 
             self::SELESAI => 'success',
             self::DIBATALKAN => 'danger',
         };
@@ -38,7 +44,9 @@ enum StatusPesanan: string
     {
         return match ($this) {
             self::PENDING => 'fas fa-clock',
-            self::DIPROSES => 'fas fa-spinner',
+            self::DITERIMA => 'fas fa-clipboard-check',
+            self::DIPACKING => 'fas fa-box',
+            self::DIANTAR => 'fas fa-truck-loading',
             self::SELESAI => 'fas fa-check-circle',
             self::DIBATALKAN => 'fas fa-ban',
         };

@@ -33,7 +33,7 @@ class ScanQr extends Component
         $transaksi = Transaksi::where('id_kurir', $kurir->id)
             ->whereHas('pesanan', function ($q) {
                 $q->where('kode_konfirmasi', $this->kodeKonfirmasi)
-                    ->where('status', StatusPesanan::DIPROSES->value);
+                    ->where('status', StatusPesanan::DIANTAR->value);
             })
             ->with(['pesanan.reseller', 'pesanan.itemPesanan.produk'])
             ->first();

@@ -129,7 +129,7 @@ class PesananManagement extends Component
                 }
 
                 $pesanan->update([
-                    'status' => StatusPesanan::DIPROSES,
+                    'status' => StatusPesanan::DITERIMA,
                     'kode_konfirmasi' => strtoupper(Str::random(8)),
                 ]);
 
@@ -165,12 +165,25 @@ class PesananManagement extends Component
         session()->flash('success', 'Pesanan berhasil ditolak / dibatalkan.');
     }
 
+    public function packPesanan(int $id): void
+    {
+        $pesanan = Pesanan::find($id);
+
+        if (!$pesanan || $pesanan->status !== StatusPesanan::DITERIMA->value) {
+            session()->flash('error', 'Hanya pesanan yang diterima yang dapat dipacking.');
+            return;
+        }
+
+        $pesanan->update(['status' => StatusPesanan::DIPACKING]);
+        session()->flash('success', 'Status pesanan diubah menjadi dipacking.');
+    }
+
     public function openDeliveryModal(int $id): void
     {
         $pesanan = Pesanan::with('transaksi')->find($id);
 
-        if (!$pesanan || $pesanan->status !== StatusPesanan::DIPROSES->value) {
-            session()->flash('error', 'Hanya pesanan yang sedang diproses yang dapat diatur pengirimannya.');
+        if (!$pesanan || !in_array($pesanan->status, [StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])) {
+            session()->flash('error', 'Hanya pesanan yang sedang dipacking atau diantar yang dapat diatur pengirimannya.');
             return;
         }
 
@@ -205,6 +218,8 @@ class PesananManagement extends Component
 
         if ($this->selectedStatusPengiriman === StatusPengiriman::DITERIMA->value) {
             $pesanan->update(['status' => StatusPesanan::SELESAI]);
+        } elseif ($this->selectedStatusPengiriman === StatusPengiriman::DIKIRIM->value) {
+            $pesanan->update(['status' => StatusPesanan::DIANTAR]);
         }
 
         $this->closeDeliveryModal();

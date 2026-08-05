@@ -84,7 +84,7 @@ class LaporanPesanan extends Component
         if ($data) {
             $totalPesanan = $data->count();
             $totalPending = $data->where('status', StatusPesanan::PENDING->value)->count();
-            $totalDiproses = $data->where('status', StatusPesanan::DIPROSES->value)->count();
+            $totalDiterima = $data->whereIn('status', [StatusPesanan::DITERIMA->value, StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])->count();
             $totalSelesai = $data->where('status', StatusPesanan::SELESAI->value)->count();
             $totalDibatalkan = $data->where('status', StatusPesanan::DIBATALKAN->value)->count();
             $totalNilai = $data->sum(fn($p) => $p->transaksi?->total_bayar ?? $p->itemPesanan->sum('subtotal'));
@@ -102,7 +102,7 @@ class LaporanPesanan extends Component
 
             $totalPesanan = $query()->count();
             $totalPending = $query()->where('status', StatusPesanan::PENDING->value)->count();
-            $totalDiproses = $query()->where('status', StatusPesanan::DIPROSES->value)->count();
+            $totalDiterima = $query()->whereIn('status', [StatusPesanan::DITERIMA->value, StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])->count();
             $totalSelesai = $query()->where('status', StatusPesanan::SELESAI->value)->count();
             $totalDibatalkan = $query()->where('status', StatusPesanan::DIBATALKAN->value)->count();
             $totalNilai = 0;
@@ -111,7 +111,7 @@ class LaporanPesanan extends Component
             });
         }
 
-        return compact('totalPesanan', 'totalPending', 'totalDiproses', 'totalSelesai', 'totalDibatalkan', 'totalNilai');
+        return compact('totalPesanan', 'totalPending', 'totalDiterima', 'totalSelesai', 'totalDibatalkan', 'totalNilai');
     }
 
     public function render()

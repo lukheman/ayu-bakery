@@ -122,7 +122,19 @@
                                         <button wire:click="acceptPesanan({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Terima Pesanan">
                                             <i class="fas fa-check"></i> Terima
                                         </button>
-                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::DIPROSES->value)
+                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::DITERIMA->value)
+                                        <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
+                                            <i class="fas fa-print"></i> Cetak Nota
+                                        </a>
+                                        <button wire:click="packPesanan({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(59,130,246,0.1); color: var(--primary-color);" title="Proses Packing">
+                                            <i class="fas fa-box"></i> Packing
+                                        </button>
+                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR->value)
+                                            <button wire:click="markAsPaid({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Konfirmasi Lunas">
+                                                <i class="fas fa-money-check-alt"></i> Lunas
+                                            </button>
+                                        @endif
+                                    @elseif (in_array($pesanan->status, [\App\Enums\StatusPesanan::DIPACKING->value, \App\Enums\StatusPesanan::DIANTAR->value]))
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
                                         </a>
