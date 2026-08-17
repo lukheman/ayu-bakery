@@ -232,7 +232,7 @@
                 @endif
 
                 {{-- Cancel Action --}}
-                @if($detailPesanan->status === 'pending')
+                @if($detailPesanan->status === \App\Enums\StatusPesanan::PENDING)
                     <div class="d-flex justify-content-end mt-3">
                         <button wire:click="cancelPesanan({{ $detailPesanan->id }})" class="btn"
                             style="background: rgba(239,68,68,0.1); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; font-weight: 600; padding: 0.6rem 1.25rem; font-size: 0.9rem;"
