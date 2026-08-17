@@ -136,9 +136,6 @@
                             </div>
                             <div style="font-size: 0.72rem; color: var(--pos-text-muted);">
                                 Rp {{ number_format($item['harga'], 0, ',', '.') }} / {{ $item['unit_label'] }}
-                                @if($item['unit'] === 'besar' && isset($item['qty_konversi']) && $item['qty_konversi'] > 1)
-                                    <span style="opacity: 0.6;">(= {{ $item['qty_konversi'] }} unit kecil)</span>
-                                @endif
                             </div>
                         </div>
                         <button wire:click="removeItem('{{ $key }}')"
