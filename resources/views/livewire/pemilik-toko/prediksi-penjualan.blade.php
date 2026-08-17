@@ -182,7 +182,7 @@
                                 style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(16,185,129,0.05);">
                                 <span class="badge-modern"
                                     style="background: rgba(16,185,129,0.12); color: var(--success-color); font-size: 0.8rem; font-weight: 700;">
-                                    {{ $item['rekomendasi'] }} {{ $item['produk']->unit_kecil ?? 'pcs' }}
+                                    {{ $item['rekomendasi'] }} {{ $item['produk']->unit ?? 'pcs' }}
                                 </span>
                             </td>
                         </tr>
@@ -202,7 +202,7 @@
                                     <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">
                                         @foreach ($item['weekly'] as $i => $qty)
                                             Minggu {{ $i + 1 }} = <strong>{{ $qty }}</strong>
-                                            {{ $item['produk']->unit_kecil ?? 'pcs' }}{{ !$loop->last ? ', ' : '' }}
+                                            {{ $item['produk']->unit ?? 'pcs' }}{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </div>
                                     <div
@@ -213,7 +213,7 @@
                                     <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
                                         <i class="fas fa-arrow-right me-1"></i> Rekomendasi produksi:
                                         <strong style="color: var(--success-color);">{{ $item['rekomendasi'] }}</strong>
-                                        {{ $item['produk']->unit_kecil ?? 'pcs' }} (pembulatan ke atas dari MA)
+                                        {{ $item['produk']->unit ?? 'pcs' }} (pembulatan ke atas dari MA)
                                     </div>
                                 </div>
                             </td>

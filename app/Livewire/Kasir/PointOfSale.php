@@ -30,53 +30,28 @@ class PointOfSale extends Component
 
     public ?array $receiptData = null;
 
-    /**
-     * Add an item to the cart.
-     *
-     * @param  string  $unit  'besar' or 'kecil'
-     */
-    public function addToCart(int $produkId, string $unit = 'besar'): void
+    public function addToCart(int $produkId): void
     {
         $produk = Produk::find($produkId);
         if (! $produk) {
             return;
         }
 
-        // If product has no unit_kecil, always treat as 'besar'
-        if (! $produk->unit_kecil) {
-            $unit = 'besar';
-        }
-
-        // Cart key distinguishes same product in different units
-        $key = $produkId.'_'.$unit;
-
-        $konversi = (int) ($produk->tingkat_konversi ?: 1);
-
-        if ($unit === 'kecil') {
-            $harga = (int) $produk->harga_jual_satuan;
-            $unitLabel = $produk->unit_kecil ?? 'pcs';
-            $qtyKonversi = 1; // 1 unit kecil = 1 unit kecil
-        } else {
-            $harga = (int) $produk->harga_jual;
-            $unitLabel = $produk->unit_besar ?? 'unit';
-            $qtyKonversi = $konversi; // 1 unit besar = N unit kecil
-        }
+        $key = (string) $produkId;
+        $harga = (int) $produk->harga_jual;
+        $unitLabel = $produk->unit ?? 'pcs';
 
         if (isset($this->cart[$key])) {
             $this->cart[$key]['jumlah']++;
-            $this->cart[$key]['qty_unit_kecil'] = $this->cart[$key]['jumlah'] * $qtyKonversi;
             $this->cart[$key]['subtotal'] = $this->cart[$key]['jumlah'] * $harga;
         } else {
             $this->cart[$key] = [
                 'id_produk' => $produk->id,
                 'nama_produk' => $produk->nama_produk,
                 'varian' => $produk->varian_rasa,
-                'unit' => $unit,
                 'unit_label' => $unitLabel,
-                'qty_konversi' => $qtyKonversi,
                 'harga' => $harga,
                 'jumlah' => 1,
-                'qty_unit_kecil' => $qtyKonversi,
                 'subtotal' => $harga,
             ];
         }
@@ -91,7 +66,6 @@ class PointOfSale extends Component
         }
         if (isset($this->cart[$key])) {
             $this->cart[$key]['jumlah'] = $qty;
-            $this->cart[$key]['qty_unit_kecil'] = $qty * $this->cart[$key]['qty_konversi'];
             $this->cart[$key]['subtotal'] = $qty * $this->cart[$key]['harga'];
         }
     }
@@ -100,7 +74,6 @@ class PointOfSale extends Component
     {
         if (isset($this->cart[$key])) {
             $this->cart[$key]['jumlah']++;
-            $this->cart[$key]['qty_unit_kecil'] = $this->cart[$key]['jumlah'] * $this->cart[$key]['qty_konversi'];
             $this->cart[$key]['subtotal'] = $this->cart[$key]['jumlah'] * $this->cart[$key]['harga'];
         }
     }
@@ -112,7 +85,6 @@ class PointOfSale extends Component
             if ($this->cart[$key]['jumlah'] <= 0) {
                 unset($this->cart[$key]);
             } else {
-                $this->cart[$key]['qty_unit_kecil'] = $this->cart[$key]['jumlah'] * $this->cart[$key]['qty_konversi'];
                 $this->cart[$key]['subtotal'] = $this->cart[$key]['jumlah'] * $this->cart[$key]['harga'];
             }
         }
@@ -184,10 +156,8 @@ class PointOfSale extends Component
                     'tanggal' => now(),
                 ]);
 
-                // Process each cart item with FEFO
-                // Stock is always tracked in unit kecil; qty_unit_kecil is the deduction amount.
                 foreach ($this->cart as $item) {
-                    $remainingQty = $item['qty_unit_kecil']; // unit kecil to deduct
+                    $remainingQty = $item['jumlah'];
 
                     $availableStocks = Persediaan::where('id_produk', $item['id_produk'])
                         ->where('jumlah', '>', 0)
@@ -197,10 +167,9 @@ class PointOfSale extends Component
 
                     $totalAvailable = $availableStocks->sum('jumlah');
                     if ($totalAvailable < $remainingQty) {
-                        $unitLabel = $item['unit_label'];
                         throw new \Exception(
                             "Stok '{$item['nama_produk']}' tidak mencukupi! ".
-                            "(Dibutuhkan: {$remainingQty} unit kecil, Tersedia: {$totalAvailable} unit kecil)"
+                            "(Dibutuhkan: {$remainingQty} {$item['unit_label']}, Tersedia: {$totalAvailable} {$item['unit_label']})"
                         );
                     }
 
@@ -221,14 +190,9 @@ class PointOfSale extends Component
                             'jumlah' => $take,
                             'unit' => $item['unit_label'],
                             'jenis' => JenisMutasi::KELUAR,
-                            'keterangan' => 'POS '.$nomorStruk.' ('.$item['unit'].')',
+                            'keterangan' => 'POS '.$nomorStruk.' ('.$item['unit_label'].')',
                             'tanggal' => now(),
                         ]);
-
-                        // For ItemPenjualan we record in the display unit (what customer ordered)
-                        $displayQty = $isFirst
-                            ? (int) ceil($take / $item['qty_konversi'])
-                            : (int) ceil($take / $item['qty_konversi']);
 
                         ItemPenjualan::create([
                             'id_penjualan' => $penjualan->id,
@@ -236,7 +200,7 @@ class PointOfSale extends Component
                             'id_persediaan' => $stock->id,
                             'nama_produk' => $item['nama_produk'],
                             'harga' => $item['harga'],
-                            'jumlah' => $isFirst ? $item['jumlah'] : 0, // full qty on first batch row
+                            'jumlah' => $isFirst ? $item['jumlah'] : 0,
                             'subtotal' => $isFirst ? $item['subtotal'] : 0,
                         ]);
 

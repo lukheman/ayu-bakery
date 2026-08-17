@@ -164,10 +164,6 @@
                             </td>
                             <td style="text-align: right;">
                                 <span class="produk-stok">Stok: {{ $produk->stok_text }}</span>
-                                @if($produk->unit_besar && $produk->tingkat_konversi > 1)
-                                    <br><span class="produk-meta">1 {{ $produk->unit_besar }} = {{ $produk->tingkat_konversi }}
-                                        {{ $produk->unit_kecil ?? 'pcs' }}</span>
-                                @endif
                             </td>
                         </tr>
                     </table>
@@ -190,7 +186,7 @@
                                 <td class="text-muted">{{ $index + 1 }}</td>
                                 <td>
                                     <span class="fw-bold">{{ $batch->jumlah }}</span>
-                                    <span class="text-muted">{{ $produk->unit_kecil ?? 'pcs' }}</span>
+                                    <span class="text-muted">{{ $produk->unit ?? 'pcs' }}</span>
                                 </td>
                                 <td>
                                     @if($batch->tgl_produksi)

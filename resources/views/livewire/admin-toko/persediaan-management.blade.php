@@ -53,20 +53,8 @@
                             </td>
                             <td>
                                 <div style="color: var(--text-primary); font-weight: 600; font-size: 1.1rem;">
-                                    {{ $persediaan->jumlah }} {{ $persediaan->produk->unit_kecil ?? '' }}
+                                    {{ $persediaan->jumlah }} {{ $persediaan->produk->unit ?? '' }}
                                 </div>
-                                @if($persediaan->produk->tingkat_konversi > 1 && $persediaan->produk->unit_besar)
-                                    @php
-                                        $jmlBesar = floor($persediaan->jumlah / $persediaan->produk->tingkat_konversi);
-                                        $sisaKecil = $persediaan->jumlah % $persediaan->produk->tingkat_konversi;
-                                    @endphp
-                                    <small class="text-muted d-block mt-1">
-                                        {{ $jmlBesar }} {{ $persediaan->produk->unit_besar }}
-                                        @if($sisaKecil > 0)
-                                            + {{ $sisaKecil }} {{ $persediaan->produk->unit_kecil ?? '' }}
-                                        @endif
-                                    </small>
-                                @endif
                             </td>
                             <td style="color: var(--text-secondary);">
                                 {{ $persediaan->tgl_produksi ? $persediaan->tgl_produksi->format('d/m/Y') : '-' }}

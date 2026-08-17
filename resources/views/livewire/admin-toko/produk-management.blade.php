@@ -72,8 +72,7 @@
                                 <div style="color: var(--text-primary); font-weight: 600;">Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</div>
                             </td>
                             <td>
-                                <div style="color: var(--text-secondary);">{{ $produk->unit_besar ?? '-' }}</div>
-                                <small class="text-muted">{{ $produk->unit_kecil ?? '-' }} ({{ $produk->tingkat_konversi }}x)</small>
+                                <div style="color: var(--text-secondary);">{{ $produk->unit ?? '-' }}</div>
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -177,45 +176,12 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="harga_jual_satuan" class="form-label">Harga Jual Satuan <span style="color: var(--danger-color);">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">Rp</span>
-                                    <input type="number" class="form-control @error('harga_jual_satuan') is-invalid @enderror" id="harga_jual_satuan"
-                                        wire:model="harga_jual_satuan" min="0">
-                                </div>
-                                @error('harga_jual_satuan')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <label for="unit" class="form-label">Unit <span style="color: var(--danger-color);">*</span></label>
+                                <input type="text" class="form-control @error('unit') is-invalid @enderror" id="unit"
+                                    wire:model="unit" placeholder="Contoh: Pcs">
+                                @error('unit')
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label for="unit_besar" class="form-label">Unit Besar</label>
-                                    <input type="text" class="form-control @error('unit_besar') is-invalid @enderror" id="unit_besar"
-                                        wire:model="unit_besar" placeholder="Contoh: Box">
-                                    @error('unit_besar')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <label for="unit_kecil" class="form-label">Unit Kecil</label>
-                                    <input type="text" class="form-control @error('unit_kecil') is-invalid @enderror" id="unit_kecil"
-                                        wire:model="unit_kecil" placeholder="Contoh: Pcs">
-                                    @error('unit_kecil')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label for="tingkat_konversi" class="form-label">Konversi <span style="color: var(--danger-color);">*</span></label>
-                                    <input type="number" class="form-control @error('tingkat_konversi') is-invalid @enderror" id="tingkat_konversi"
-                                        wire:model="tingkat_konversi" min="1">
-                                    @error('tingkat_konversi')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
                             </div>
                         </div>
                     </div>

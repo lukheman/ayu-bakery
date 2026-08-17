@@ -217,11 +217,6 @@
                             <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary-color);">
                                 <i class="fas fa-cubes me-1"></i>Stok: {{ $produk->stok_text }}
                             </div>
-                            @if($produk->unit_besar && $produk->tingkat_konversi > 1)
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">
-                                    1 {{ $produk->unit_besar }} = {{ $produk->tingkat_konversi }} {{ $produk->unit_kecil ?? 'pcs' }}
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -246,7 +241,7 @@
                                     <td>
                                         <span style="font-weight: 600;">{{ $batch->jumlah }}</span>
                                         <span
-                                            style="font-size: 0.75rem; color: var(--text-muted);">{{ $produk->unit_kecil ?? 'pcs' }}</span>
+                                            style="font-size: 0.75rem; color: var(--text-muted);">{{ $produk->unit ?? 'pcs' }}</span>
                                     </td>
                                     <td>
                                         @if($batch->tgl_produksi)

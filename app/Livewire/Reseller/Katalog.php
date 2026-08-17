@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Reseller;
 
+use App\Enums\StatusPembayaran;
+use App\Enums\StatusPengiriman;
 use App\Enums\StatusPesanan;
 use App\Models\ItemKeranjang;
 use App\Models\ItemPesanan;
 use App\Models\KeranjangBelanja;
 use App\Models\Pesanan;
 use App\Models\Produk;
+use App\Models\Transaksi;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -24,9 +27,13 @@ class Katalog extends Component
     public string $search = '';
 
     public int $qty = 1;
+
     public string $metode_pembayaran = 'tunai';
+
     public ?int $selectedProdukId = null;
+
     public bool $showCartModal = false;
+
     public bool $isDirectOrder = false;
 
     public function updatedSearch(): void
@@ -54,12 +61,12 @@ class Katalog extends Component
     {
         $reseller = auth('reseller')->user();
 
-        if (!$reseller || !$this->selectedProdukId) {
+        if (! $reseller || ! $this->selectedProdukId) {
             return;
         }
 
         $produk = Produk::withSum('persediaan', 'jumlah')->find($this->selectedProdukId);
-        if (!$produk) {
+        if (! $produk) {
             return;
         }
 
@@ -90,7 +97,7 @@ class Katalog extends Component
                 'id_keranjang' => $keranjang->id,
                 'id_produk' => $produk->id,
                 'jumlah' => max(1, $this->qty),
-                'unit' => $produk->unit_kecil,
+                'unit' => $produk->unit,
                 'created_at' => now(),
             ]);
         }
@@ -108,12 +115,12 @@ class Katalog extends Component
     {
         $reseller = auth('reseller')->user();
 
-        if (!$reseller || !$this->selectedProdukId) {
+        if (! $reseller || ! $this->selectedProdukId) {
             return;
         }
 
         $produk = Produk::withSum('persediaan', 'jumlah')->find($this->selectedProdukId);
-        if (!$produk) {
+        if (! $produk) {
             return;
         }
 
@@ -126,7 +133,7 @@ class Katalog extends Component
         ]);
 
         $qty = max(1, $this->qty);
-        $hargaSatuan = $produk->harga_jual_satuan ?? 0;
+        $hargaSatuan = $produk->harga_jual ?? 0;
 
         // Get or create keranjang for FK
         $keranjang = KeranjangBelanja::firstOrCreate(
@@ -145,19 +152,19 @@ class Katalog extends Component
             'id_pesanan' => $pesanan->id,
             'id_produk' => $produk->id,
             'jumlah' => $qty,
-            'unit' => $produk->unit_kecil,
+            'unit' => $produk->unit,
             'harga_satuan' => $hargaSatuan,
             'subtotal' => $qty * $hargaSatuan,
             'created_at' => now(),
         ]);
 
         // Create transaksi
-        \App\Models\Transaksi::create([
+        Transaksi::create([
             'id_pesanan' => $pesanan->id,
             'metode_pembayaran' => $this->metode_pembayaran,
             'total_bayar' => $qty * $hargaSatuan,
-            'status_pembayaran' => \App\Enums\StatusPembayaran::BELUM_BAYAR,
-            'status_pengiriman' => \App\Enums\StatusPengiriman::MENUNGGU,
+            'status_pembayaran' => StatusPembayaran::BELUM_BAYAR,
+            'status_pengiriman' => StatusPengiriman::MENUNGGU,
             'tanggal' => now(),
         ]);
 
@@ -170,9 +177,9 @@ class Katalog extends Component
         $produks = Produk::query()
             ->withSum('persediaan', 'jumlah')
             ->when($this->search, function ($query) {
-                $query->where('nama_produk', 'like', '%' . $this->search . '%')
-                    ->orWhere('varian_rasa', 'like', '%' . $this->search . '%')
-                    ->orWhere('kode_produk', 'like', '%' . $this->search . '%');
+                $query->where('nama_produk', 'like', '%'.$this->search.'%')
+                    ->orWhere('varian_rasa', 'like', '%'.$this->search.'%')
+                    ->orWhere('kode_produk', 'like', '%'.$this->search.'%');
             })
             ->orderBy('nama_produk', 'asc')
             ->paginate(12);

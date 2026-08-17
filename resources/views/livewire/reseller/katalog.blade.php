@@ -49,14 +49,9 @@
 
                         <div class="mt-2">
                             <div style="font-weight: 700; color: var(--primary-color); font-size: 1.05rem;">
-                                Rp {{ number_format($produk->harga_jual_satuan, 0, ',', '.') }}
-                                <small style="font-weight: 400; color: var(--text-muted);">/{{ $produk->unit_kecil ?? 'pcs' }}</small>
+                                Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}
+                                <small style="font-weight: 400; color: var(--text-muted);">/{{ $produk->unit ?? 'pcs' }}</small>
                             </div>
-                            @if($produk->harga_jual && $produk->unit_besar)
-                                <small style="color: var(--text-secondary);">
-                                    Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}/{{ $produk->unit_besar }}
-                                </small>
-                            @endif
                         </div>
 
                         {{-- Stock Info --}}
@@ -129,8 +124,8 @@
                         <div>
                             <div class="fw-semibold" style="color: var(--text-primary);">{{ $modalProduk->nama_produk }}</div>
                             <div style="color: var(--primary-color); font-weight: 700;">
-                                Rp {{ number_format($modalProduk->harga_jual_satuan, 0, ',', '.') }}
-                                <small style="font-weight: 400; color: var(--text-muted);">/{{ $modalProduk->unit_kecil ?? 'pcs' }}</small>
+                                Rp {{ number_format($modalProduk->harga_jual, 0, ',', '.') }}
+                                <small style="font-weight: 400; color: var(--text-muted);">/{{ $modalProduk->unit ?? 'pcs' }}</small>
                             </div>
                             <div style="font-size: 0.75rem; margin-top: 4px; color: var(--text-secondary);">
                                 <i class="fas fa-box" style="color: var(--text-muted);"></i> Stok Tersedia: <strong style="color: var(--text-primary);">{{ $modalProduk->stok_text }}</strong>
@@ -140,7 +135,7 @@
 
                     @if(!$isDirectOrder)
                         <div class="mb-4">
-                            <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit_kecil ?? 'pcs' }})</label>
+                            <label for="qty" class="form-label">Jumlah ({{ $modalProduk->unit ?? 'pcs' }})</label>
                             <input type="number" class="form-control" id="qty" wire:model="qty" min="1" max="{{ $modalProduk->total_stok }}" value="1">
                             @error('qty') <span style="font-size: 0.75rem; color: var(--danger-color); display: block; margin-top: 4px;">{{ $message }}</span> @enderror
                         </div>
@@ -164,11 +159,11 @@
                         <div class="mb-4 p-3" style="background: rgba(99,102,241,0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
                             <div class="d-flex justify-content-between mb-2">
                                 <span style="color: var(--text-secondary); font-size: 0.9rem;">Jumlah Dipesan</span>
-                                <span style="font-weight: 600; color: var(--text-primary);">{{ $qty }} {{ $modalProduk->unit_kecil ?? 'pcs' }}</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">{{ $qty }} {{ $modalProduk->unit ?? 'pcs' }}</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span style="color: var(--text-secondary); font-size: 0.9rem;">Total Harga</span>
-                                <span style="font-weight: 700; color: var(--primary-color);">Rp {{ number_format($qty * $modalProduk->harga_jual_satuan, 0, ',', '.') }}</span>
+                                <span style="font-weight: 700; color: var(--primary-color);">Rp {{ number_format($qty * $modalProduk->harga_jual, 0, ',', '.') }}</span>
                             </div>
                         </div>
 

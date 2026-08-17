@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class PenjualanImport implements ToCollection, WithHeadingRow
 {
@@ -22,7 +23,7 @@ class PenjualanImport implements ToCollection, WithHeadingRow
 
         foreach ($rows as $row) {
             $tanggalRaw = $row['tanggal'] ?? null;
-            if (!$tanggalRaw) {
+            if (! $tanggalRaw) {
                 continue;
             }
 
@@ -30,7 +31,7 @@ class PenjualanImport implements ToCollection, WithHeadingRow
                 // Try to parse the date. If it's a numeric value from Excel, we convert it.
                 // Otherwise, let Carbon try to parse the string.
                 if (is_numeric($tanggalRaw)) {
-                    $tanggal = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tanggalRaw);
+                    $tanggal = Date::excelToDateTimeObject($tanggalRaw);
                     $tanggal = Carbon::instance($tanggal);
                 } else {
                     // Try to handle m/d/y or d/m/y correctly if possible, default Carbon parse is usually smart
@@ -41,7 +42,7 @@ class PenjualanImport implements ToCollection, WithHeadingRow
             }
 
             // Create a unique struk number for this date and import
-            $nomorStruk = 'IMP-' . $tanggal->format('Ymd') . '-' . strtoupper(substr(md5(time() . rand()), 0, 4));
+            $nomorStruk = 'IMP-'.$tanggal->format('Ymd').'-'.strtoupper(substr(md5(time().rand()), 0, 4));
 
             $penjualan = PenjualanKasir::create([
                 'nomor_struk' => $nomorStruk,
@@ -58,7 +59,7 @@ class PenjualanImport implements ToCollection, WithHeadingRow
             // Iterate over all columns in the row
             foreach ($row as $key => $value) {
                 // Skip the date column or empty values
-                if ($key === 'tanggal' || empty($value) || !is_numeric($value)) {
+                if ($key === 'tanggal' || empty($value) || ! is_numeric($value)) {
                     continue;
                 }
 
@@ -75,9 +76,9 @@ class PenjualanImport implements ToCollection, WithHeadingRow
                 $produk = Produk::firstOrCreate(
                     ['nama_produk' => $namaProduk],
                     [
-                        'kode_produk' => 'PRD-' . strtoupper(substr(md5($namaProduk . time() . rand()), 0, 5)),
+                        'kode_produk' => 'PRD-'.strtoupper(substr(md5($namaProduk.time().rand()), 0, 5)),
                         'harga_jual' => 10000, // Default price
-                        'unit_kecil' => 'pcs',
+                        'unit' => 'pcs',
                     ]
                 );
 
@@ -99,6 +100,7 @@ class PenjualanImport implements ToCollection, WithHeadingRow
             // If no items were created, we can delete the empty transaction
             if ($totalPenjualan == 0) {
                 $penjualan->delete();
+
                 continue;
             }
 

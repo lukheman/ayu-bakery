@@ -179,7 +179,7 @@
                         <td>{{ $qty }}</td>
                     @endforeach
                     <td class="ma">{{ number_format($item['ma'], 1) }}</td>
-                    <td class="rekomendasi">{{ $item['rekomendasi'] }} {{ $item['produk']->unit_kecil ?? 'pcs' }}</td>
+                    <td class="rekomendasi">{{ $item['rekomendasi'] }} {{ $item['produk']->unit ?? 'pcs' }}</td>
                 </tr>
             @empty
                 <tr>
@@ -201,7 +201,7 @@
                     MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} = <strong
                         style="color: #111;">{{ number_format($item['ma'], 2) }}</strong>
                     → Rekomendasi: <strong style="color: #111;">{{ $item['rekomendasi'] }}</strong>
-                    {{ $item['produk']->unit_kecil ?? 'pcs' }}
+                    {{ $item['produk']->unit ?? 'pcs' }}
                 </div>
             @endforeach
         </div>

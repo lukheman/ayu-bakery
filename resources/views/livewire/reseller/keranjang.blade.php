@@ -71,8 +71,8 @@
                             <div class="flex-grow-1">
                                 <div class="fw-semibold" style="color: var(--text-primary);">{{ $item->produk->nama_produk }}</div>
                                 <div style="color: var(--primary-color); font-weight: 600; font-size: 0.9rem;">
-                                    Rp {{ number_format($item->produk->harga_jual_satuan, 0, ',', '.') }}
-                                    <small style="font-weight: 400; color: var(--text-muted);">/{{ $item->produk->unit_kecil ?? 'pcs' }}</small>
+                                    Rp {{ number_format($item->produk->harga_jual, 0, ',', '.') }}
+                                    <small style="font-weight: 400; color: var(--text-muted);">/{{ $item->produk->unit ?? 'pcs' }}</small>
                                 </div>
                             </div>
 
@@ -94,7 +94,7 @@
                             {{-- Subtotal --}}
                             <div class="text-end" style="min-width: 120px;">
                                 <div style="font-weight: 700; color: var(--text-primary);">
-                                    Rp {{ number_format($item->jumlah * $item->produk->harga_jual_satuan, 0, ',', '.') }}
+                                    Rp {{ number_format($item->jumlah * $item->produk->harga_jual, 0, ',', '.') }}
                                 </div>
                             </div>
 

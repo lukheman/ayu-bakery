@@ -79,31 +79,17 @@
                             {{-- Unit buttons --}}
                             <div style="padding: 0 0.75rem 0.75rem; display: flex; flex-direction: column; gap: 4px;">
                                 {{-- Unit Besar button --}}
-                                <button wire:click="addToCart({{ $produk->id }}, 'besar')"
+                                <button wire:click="addToCart({{ $produk->id }})"
                                     @if($produk->total_stok <= 0) disabled @endif
                                     style="width: 100%; padding: 5px 8px; border-radius: 7px; border: 1px solid {{ $produk->total_stok > 0 ? 'var(--pos-primary)' : 'var(--pos-border)' }}; background: {{ $produk->total_stok > 0 ? 'rgba(99,102,241,0.1)' : 'var(--pos-surface-2)' }}; color: {{ $produk->total_stok > 0 ? 'var(--pos-primary-light)' : 'var(--pos-text-muted)' }}; cursor: {{ $produk->total_stok > 0 ? 'pointer' : 'not-allowed' }}; font-size: 0.75rem; font-weight: 600; text-align: left; transition: all 0.15s; {{ $produk->total_stok <= 0 ? 'opacity: 0.5;' : '' }}"
                                     @if($produk->total_stok > 0)
                                         onmouseover="this.style.background='var(--pos-primary)'; this.style.color='white'"
                                         onmouseout="this.style.background='rgba(99,102,241,0.1)'; this.style.color='var(--pos-primary-light)'"
                                     @endif>
-                                    <span style="font-size: 0.65rem; opacity: 0.8;">📦
-                                        {{ $produk->unit_besar ?? 'unit' }}</span><br>
+                                    <span style="font-size: 0.65rem; opacity: 0.8;">📦 {{ $produk->unit ?? 'unit' }}</span><br>
                                     <span>Rp {{ number_format($produk->harga_jual, 0, ',', '.') }}</span>
                                 </button>
 
-                                @if($produk->unit_kecil && $produk->harga_jual_satuan > 0)
-                                    {{-- Unit Kecil button --}}
-                                    <button wire:click="addToCart({{ $produk->id }}, 'kecil')"
-                                        @if($produk->total_stok <= 0) disabled @endif
-                                        style="width: 100%; padding: 5px 8px; border-radius: 7px; border: 1px solid var(--pos-border); background: var(--pos-surface-2); color: {{ $produk->total_stok > 0 ? 'var(--pos-text-secondary)' : 'var(--pos-text-muted)' }}; cursor: {{ $produk->total_stok > 0 ? 'pointer' : 'not-allowed' }}; font-size: 0.75rem; font-weight: 600; text-align: left; transition: all 0.15s; {{ $produk->total_stok <= 0 ? 'opacity: 0.5;' : '' }}"
-                                        @if($produk->total_stok > 0)
-                                            onmouseover="this.style.borderColor='var(--pos-accent)'; this.style.color='var(--pos-accent)'"
-                                            onmouseout="this.style.borderColor='var(--pos-border)'; this.style.color='var(--pos-text-secondary)'"
-                                        @endif>
-                                        <span style="font-size: 0.65rem; opacity: 0.8;">🍫 {{ $produk->unit_kecil }}</span><br>
-                                        <span>Rp {{ number_format($produk->harga_jual_satuan, 0, ',', '.') }}</span>
-                                    </button>
-                                @endif
                             </div>
                         </div>
                     </div>

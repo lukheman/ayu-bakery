@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 #[Title('Manajemen Produk - Ayu Bakery')]
 class ProdukManagement extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     // Search
     #[Url(as: 'q')]
@@ -21,21 +21,28 @@ class ProdukManagement extends Component
 
     // Form fields
     public string $nama_produk = '';
+
     public string $kode_produk = '';
+
     public string $varian_rasa = '';
+
     public int $harga_jual = 0;
-    public int $harga_jual_satuan = 0;
-    public string $unit_besar = '';
-    public string $unit_kecil = '';
-    public int $tingkat_konversi = 1;
+
+    public string $unit = '';
+
     public string $deskripsi = '';
+
     public $gambar;
+
     public ?string $currentGambar = null;
 
     // State
     public ?int $editingProdukId = null;
+
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
+
     public ?int $deletingProdukId = null;
 
     protected function rules(): array
@@ -45,15 +52,12 @@ class ProdukManagement extends Component
             'kode_produk' => ['required', 'string', 'max:50'],
             'varian_rasa' => ['nullable', 'string', 'max:255'],
             'harga_jual' => ['required', 'integer', 'min:0'],
-            'harga_jual_satuan' => ['required', 'integer', 'min:0'],
-            'unit_besar' => ['nullable', 'string', 'max:50'],
-            'unit_kecil' => ['nullable', 'string', 'max:50'],
-            'tingkat_konversi' => ['required', 'integer', 'min:1'],
+            'unit' => ['required', 'string', 'max:50'],
             'gambar' => ['nullable', 'image', 'max:2048'],
         ];
 
         if ($this->editingProdukId) {
-            $rules['kode_produk'][] = 'unique:produk,kode_produk,' . $this->editingProdukId;
+            $rules['kode_produk'][] = 'unique:produk,kode_produk,'.$this->editingProdukId;
         } else {
             $rules['kode_produk'][] = 'unique:produk,kode_produk';
         }
@@ -66,7 +70,6 @@ class ProdukManagement extends Component
         'kode_produk.required' => 'Kode produk harus diisi.',
         'kode_produk.unique' => 'Kode produk sudah digunakan.',
         'harga_jual.required' => 'Harga jual harus diisi.',
-        'harga_jual_satuan.required' => 'Harga jual satuan harus diisi.',
         'gambar.image' => 'File harus berupa gambar.',
         'gambar.max' => 'Ukuran gambar maksimal 2MB.',
     ];
@@ -96,10 +99,7 @@ class ProdukManagement extends Component
         $this->kode_produk = $produk->kode_produk;
         $this->varian_rasa = $produk->varian_rasa ?? '';
         $this->harga_jual = $produk->harga_jual;
-        $this->harga_jual_satuan = $produk->harga_jual_satuan;
-        $this->unit_besar = $produk->unit_besar ?? '';
-        $this->unit_kecil = $produk->unit_kecil ?? '';
-        $this->tingkat_konversi = $produk->tingkat_konversi;
+        $this->unit = $produk->unit ?? '';
         $this->deskripsi = $produk->deskripsi ?? '';
         $this->gambar = null;
         $this->showModal = true;
@@ -114,10 +114,7 @@ class ProdukManagement extends Component
             'kode_produk' => $validated['kode_produk'],
             'varian_rasa' => $validated['varian_rasa'] ?: null,
             'harga_jual' => $validated['harga_jual'],
-            'harga_jual_satuan' => $validated['harga_jual_satuan'],
-            'unit_besar' => $validated['unit_besar'] ?: null,
-            'unit_kecil' => $validated['unit_kecil'] ?: null,
-            'tingkat_konversi' => $validated['tingkat_konversi'],
+            'unit' => $validated['unit'],
             // 'deskripsi' => $validated['deskripsi'] ?: null,
         ];
 
@@ -197,10 +194,7 @@ class ProdukManagement extends Component
         $this->kode_produk = '';
         $this->varian_rasa = '';
         $this->harga_jual = 0;
-        $this->harga_jual_satuan = 0;
-        $this->unit_besar = '';
-        $this->unit_kecil = '';
-        $this->tingkat_konversi = 1;
+        $this->unit = '';
         $this->deskripsi = '';
         $this->gambar = null;
         $this->currentGambar = null;
@@ -211,9 +205,9 @@ class ProdukManagement extends Component
     {
         $produks = Produk::query()
             ->when($this->search, function ($query) {
-                $query->where('nama_produk', 'like', '%' . $this->search . '%')
-                    ->orWhere('kode_produk', 'like', '%' . $this->search . '%')
-                    ->orWhere('varian_rasa', 'like', '%' . $this->search . '%');
+                $query->where('nama_produk', 'like', '%'.$this->search.'%')
+                    ->orWhere('kode_produk', 'like', '%'.$this->search.'%')
+                    ->orWhere('varian_rasa', 'like', '%'.$this->search.'%');
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);

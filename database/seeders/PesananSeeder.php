@@ -6,14 +6,14 @@ use App\Enums\StatusPembayaran;
 use App\Enums\StatusPengiriman;
 use App\Enums\StatusPesanan;
 use App\Models\ItemPesanan;
-use App\Models\KeranjangBelanja;
 use App\Models\Kasir;
+use App\Models\KeranjangBelanja;
 use App\Models\Kurir;
-use App\Models\Pesanan;
+use App\Models\LaporanPenjualan;
 use App\Models\Persediaan;
+use App\Models\Pesanan;
 use App\Models\Produk;
 use App\Models\Transaksi;
-use App\Models\LaporanPenjualan;
 use Illuminate\Database\Seeder;
 
 class PesananSeeder extends Seeder
@@ -40,7 +40,7 @@ class PesananSeeder extends Seeder
 
             foreach ($selectedProduk as $produk) {
                 $jumlah = fake()->numberBetween(1, 5);
-                $hargaSatuan = $produk->harga_jual_satuan;
+                $hargaSatuan = $produk->harga_jual;
                 $subtotal = $jumlah * $hargaSatuan;
                 $totalBayar += $subtotal;
                 $totalTerjual += $jumlah;
@@ -52,7 +52,7 @@ class PesananSeeder extends Seeder
                     'id_produk' => $produk->id,
                     'id_persediaan' => $persediaan?->id,
                     'jumlah' => $jumlah,
-                    'unit' => $produk->unit_kecil,
+                    'unit' => $produk->unit,
                     'harga_satuan' => $hargaSatuan,
                     'subtotal' => $subtotal,
                     'tgl_exp' => $persediaan?->tgl_exp,

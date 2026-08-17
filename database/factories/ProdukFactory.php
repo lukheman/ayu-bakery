@@ -17,16 +17,16 @@ class ProdukFactory extends Factory
     public function definition(): array
     {
         $produkList = [
-            ['nama' => 'Roti Tawar', 'rasa' => 'Original', 'unit_besar' => 'Dus', 'unit_kecil' => 'Pcs', 'konversi' => 12],
-            ['nama' => 'Roti Cokelat', 'rasa' => 'Cokelat', 'unit_besar' => 'Dus', 'unit_kecil' => 'Pcs', 'konversi' => 10],
-            ['nama' => 'Roti Keju', 'rasa' => 'Keju', 'unit_besar' => 'Dus', 'unit_kecil' => 'Pcs', 'konversi' => 10],
-            ['nama' => 'Donat Gula', 'rasa' => 'Gula', 'unit_besar' => 'Box', 'unit_kecil' => 'Pcs', 'konversi' => 6],
-            ['nama' => 'Donat Cokelat', 'rasa' => 'Cokelat', 'unit_besar' => 'Box', 'unit_kecil' => 'Pcs', 'konversi' => 6],
-            ['nama' => 'Kue Lapis', 'rasa' => 'Original', 'unit_besar' => 'Loyang', 'unit_kecil' => 'Potong', 'konversi' => 8],
-            ['nama' => 'Brownies', 'rasa' => 'Cokelat', 'unit_besar' => 'Loyang', 'unit_kecil' => 'Potong', 'konversi' => 8],
-            ['nama' => 'Nastar', 'rasa' => 'Nanas', 'unit_besar' => 'Toples', 'unit_kecil' => 'Pcs', 'konversi' => 30],
-            ['nama' => 'Kastengel', 'rasa' => 'Keju', 'unit_besar' => 'Toples', 'unit_kecil' => 'Pcs', 'konversi' => 30],
-            ['nama' => 'Bolu Pandan', 'rasa' => 'Pandan', 'unit_besar' => 'Loyang', 'unit_kecil' => 'Potong', 'konversi' => 10],
+            ['nama' => 'Roti Tawar', 'rasa' => 'Original', 'unit' => 'Pcs'],
+            ['nama' => 'Roti Cokelat', 'rasa' => 'Cokelat', 'unit' => 'Pcs'],
+            ['nama' => 'Roti Keju', 'rasa' => 'Keju', 'unit' => 'Pcs'],
+            ['nama' => 'Donat Gula', 'rasa' => 'Gula', 'unit' => 'Pcs'],
+            ['nama' => 'Donat Cokelat', 'rasa' => 'Cokelat', 'unit' => 'Pcs'],
+            ['nama' => 'Kue Lapis', 'rasa' => 'Original', 'unit' => 'Potong'],
+            ['nama' => 'Brownies', 'rasa' => 'Cokelat', 'unit' => 'Potong'],
+            ['nama' => 'Nastar', 'rasa' => 'Nanas', 'unit' => 'Pcs'],
+            ['nama' => 'Kastengel', 'rasa' => 'Keju', 'unit' => 'Pcs'],
+            ['nama' => 'Bolu Pandan', 'rasa' => 'Pandan', 'unit' => 'Potong'],
         ];
 
         $index = self::$counter % count($produkList);
@@ -38,14 +38,12 @@ class ProdukFactory extends Factory
 
         return [
             'nama_produk' => $produk['nama'],
-            'kode_produk' => 'PRD-' . str_pad(self::$counter, 4, '0', STR_PAD_LEFT),
+            'kode_produk' => 'PRD-'.str_pad(self::$counter, 4, '0', STR_PAD_LEFT),
             'varian_rasa' => $produk['rasa'],
             'harga_jual' => $hargaJual,
-            'harga_jual_satuan' => intval($hargaJual / $produk['konversi']),
-            'unit_besar' => $produk['unit_besar'],
-            'unit_kecil' => $produk['unit_kecil'],
-            'tingkat_konversi' => $produk['konversi'],
-            'deskripsi' => 'Produk ' . $produk['nama'] . ' rasa ' . $produk['rasa'] . ' dari Ayu Bakery',
+            'harga_jual_satuan' => $hargaJual,
+            'unit' => $produk['unit'],
+            'deskripsi' => 'Produk '.$produk['nama'].' rasa '.$produk['rasa'].' dari Ayu Bakery',
             'gambar' => null,
         ];
     }

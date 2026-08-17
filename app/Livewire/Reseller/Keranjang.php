@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Reseller;
 
+use App\Enums\StatusPembayaran;
+use App\Enums\StatusPengiriman;
 use App\Enums\StatusPesanan;
 use App\Models\ItemKeranjang;
 use App\Models\ItemPesanan;
 use App\Models\KeranjangBelanja;
 use App\Models\Pesanan;
+use App\Models\Transaksi;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -16,14 +19,17 @@ use Livewire\Component;
 class Keranjang extends Component
 {
     public string $catatan = '';
+
     public string $metode_pembayaran = 'tunai';
+
     public bool $showCheckoutModal = false;
+
     public array $selectedItems = [];
 
     public function getKeranjang(): ?KeranjangBelanja
     {
         $reseller = auth('reseller')->user();
-        if (!$reseller) {
+        if (! $reseller) {
             return null;
         }
 
@@ -35,8 +41,9 @@ class Keranjang extends Component
     public function toggleSelectAll(): void
     {
         $keranjang = $this->getKeranjang();
-        if (!$keranjang)
+        if (! $keranjang) {
             return;
+        }
 
         $allIds = $keranjang->itemKeranjang->pluck('id')->toArray();
 
@@ -82,6 +89,7 @@ class Keranjang extends Component
     {
         if (empty($this->selectedItems)) {
             session()->flash('error', 'Pilih minimal 1 produk untuk checkout.');
+
             return;
         }
         $this->showCheckoutModal = true;
@@ -95,18 +103,20 @@ class Keranjang extends Component
     public function checkout(): void
     {
         $reseller = auth('reseller')->user();
-        if (!$reseller) {
+        if (! $reseller) {
             return;
         }
 
         if (empty($this->selectedItems)) {
             session()->flash('error', 'Pilih minimal 1 produk untuk checkout.');
+
             return;
         }
 
         $keranjang = $this->getKeranjang();
-        if (!$keranjang) {
+        if (! $keranjang) {
             session()->flash('error', 'Keranjang belanja tidak ditemukan.');
+
             return;
         }
 
@@ -129,23 +139,23 @@ class Keranjang extends Component
                 'id_pesanan' => $pesanan->id,
                 'id_produk' => $cartItem->id_produk,
                 'jumlah' => $cartItem->jumlah,
-                'unit' => $cartItem->produk->unit_kecil,
-                'harga_satuan' => $cartItem->produk->harga_jual_satuan ?? 0,
-                'subtotal' => $cartItem->jumlah * ($cartItem->produk->harga_jual_satuan ?? 0),
+                'unit' => $cartItem->produk->unit,
+                'harga_satuan' => $cartItem->produk->harga_jual ?? 0,
+                'subtotal' => $cartItem->jumlah * ($cartItem->produk->harga_jual ?? 0),
                 'created_at' => now(),
             ]);
         }
 
-        $totalBayar = collect($selectedCartItems)->sum(function($item) {
-            return $item->jumlah * ($item->produk->harga_jual_satuan ?? 0);
+        $totalBayar = collect($selectedCartItems)->sum(function ($item) {
+            return $item->jumlah * ($item->produk->harga_jual ?? 0);
         });
 
-        \App\Models\Transaksi::create([
+        Transaksi::create([
             'id_pesanan' => $pesanan->id,
             'metode_pembayaran' => $this->metode_pembayaran,
             'total_bayar' => $totalBayar,
-            'status_pembayaran' => \App\Enums\StatusPembayaran::BELUM_BAYAR,
-            'status_pengiriman' => \App\Enums\StatusPengiriman::MENUNGGU,
+            'status_pembayaran' => StatusPembayaran::BELUM_BAYAR,
+            'status_pengiriman' => StatusPengiriman::MENUNGGU,
             'tanggal' => now(),
         ]);
 
@@ -167,10 +177,10 @@ class Keranjang extends Component
 
         // Selected items summary
         $selectedItemModels = $items->whereIn('id', $this->selectedItems);
-        $selectedTotal = $selectedItemModels->sum(fn($item) => $item->jumlah * ($item->produk->harga_jual_satuan ?? 0));
+        $selectedTotal = $selectedItemModels->sum(fn ($item) => $item->jumlah * ($item->produk->harga_jual ?? 0));
         $selectedCount = $selectedItemModels->count();
 
-        $grandTotal = $items->sum(fn($item) => $item->jumlah * ($item->produk->harga_jual_satuan ?? 0));
+        $grandTotal = $items->sum(fn ($item) => $item->jumlah * ($item->produk->harga_jual ?? 0));
 
         return view('livewire.reseller.keranjang', [
             'items' => $items,
