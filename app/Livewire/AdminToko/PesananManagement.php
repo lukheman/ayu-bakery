@@ -221,13 +221,15 @@ class PesananManagement extends Component
 
         $pesanan->transaksi->update([
             'id_kurir' => $this->selectedKurirId ?: null,
-            'status_pengiriman' => StatusPengiriman::DIKIRIM,
+            'status_pengiriman' => $this->selectedKurirId ? StatusPengiriman::DIKIRIM : $pesanan->transaksi->status_pengiriman,
         ]);
 
-        $pesanan->update(['status' => StatusPesanan::DIANTAR]);
+        if ($this->selectedKurirId) {
+            $pesanan->update(['status' => StatusPesanan::DIANTAR]);
+        }
 
         $this->closeDeliveryModal();
-        session()->flash('success', 'Kurir berhasil ditetapkan dan pesanan diserahkan ke kurir.');
+        session()->flash('success', 'Kurir berhasil ditetapkan dan status pengiriman diubah menjadi dikirim.');
     }
 
     public function markAsPaid(int $id): void

@@ -72,16 +72,11 @@
                         style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500; padding: 0.4rem 1rem; font-size: 0.8rem;">
                         <i class="fas fa-eye me-1"></i> Detail
                     </button>
-                    @if($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::MENUNGGU)
-                        <button wire:click="updateStatusPengiriman({{ $transaksi->id }}, 'dikirim')" class="btn btn-sm"
-                            style="background: rgba(99,102,241,0.1); color: var(--primary-color); border: none; border-radius: 8px; font-weight: 600; padding: 0.4rem 1rem; font-size: 0.8rem;">
-                            <i class="fas fa-shipping-fast me-1"></i> Mulai Kirim
-                        </button>
-                    @elseif($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::DIKIRIM)
-                        <a href="{{ route('kurir.scan') }}" class="btn btn-sm"
+                    @if($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::DIKIRIM)
+                        <button wire:click="updateStatusPengiriman({{ $transaksi->id }}, 'diterima')" class="btn btn-sm"
                             style="background: rgba(16,185,129,0.1); color: var(--success-color); border: none; border-radius: 8px; font-weight: 600; padding: 0.4rem 1rem; font-size: 0.8rem;">
-                            <i class="fas fa-qrcode me-1"></i> Scan Konfirmasi
-                        </a>
+                            <i class="fas fa-box-open me-1"></i> Tandai Diterima
+                        </button>
                     @endif
                 </div>
             </div>

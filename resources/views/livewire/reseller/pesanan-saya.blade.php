@@ -101,7 +101,7 @@
         @php
             $detailItems = $detailPesanan->itemPesanan ?? collect();
             $detailTotal = $detailItems->sum('subtotal');
-            $detailStatus = \App\Enums\StatusPesanan::tryFrom($detailPesanan->status);
+            $detailStatus = $detailPesanan->status;
         @endphp
         <div class="modal-backdrop-custom" wire:click.self="closeDetail">
             <div class="modal-content-custom" wire:click.stop style="max-width: 550px; max-height: 90vh; overflow-y: auto;">
@@ -188,7 +188,7 @@
                     <div class="d-flex justify-content-between py-2 mb-2">
                         <span style="font-size: 0.9rem; color: var(--text-secondary);">Status Pembayaran</span>
                         @php
-                            $statusBayar = \App\Enums\StatusPembayaran::tryFrom($detailPesanan->transaksi->status_pembayaran);
+                            $statusBayar = $detailPesanan->transaksi->status_pembayaran;
                         @endphp
                         @if($statusBayar)
                             <span style="font-size: 0.8rem; padding: 4px 10px; border-radius: 50px; font-weight: 600;
@@ -204,7 +204,7 @@
                     </div>
 
                     {{-- Upload Bukti --}}
-                    @if($detailPesanan->transaksi->metode_pembayaran === 'transfer' && $detailPesanan->transaksi->status_pembayaran === 'belum_bayar')
+                    @if($detailPesanan->transaksi->metode_pembayaran === 'transfer' && $detailPesanan->transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR)
                         <div class="p-3 mb-3" style="background: rgba(99,102,241,0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
                             <h6 style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem;">Upload Bukti Pembayaran</h6>
                             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Silakan upload bukti transfer Anda agar pesanan dapat diproses.</p>

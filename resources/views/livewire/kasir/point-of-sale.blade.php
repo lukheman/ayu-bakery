@@ -53,14 +53,23 @@
                                 @endif
                                 {{-- Persediaan / Stock info --}}
                                 <div style="margin-top: 4px;">
-                                    @if($produk->total_stok > 0)
-                                        <span
-                                            style="font-size: 0.62rem; font-weight: 600; color: #10b981; background: rgba(16,185,129,0.12); padding: 1px 6px; border-radius: 4px;">
-                                            <i class="fas fa-boxes me-1"></i>{{ $produk->stok_text }}
-                                        </span>
-                                    @else
-                                        <span
-                                            style="font-size: 0.62rem; font-weight: 600; color: #ef4444; background: rgba(239,68,68,0.12); padding: 1px 6px; border-radius: 4px;">
+                                @if($produk->total_stok > 0)
+                                    <span
+                                        style="font-size: 0.62rem; font-weight: 600; color: #10b981; background: rgba(16,185,129,0.12); padding: 1px 6px; border-radius: 4px;">
+                                        <i class="fas fa-boxes me-1"></i>{{ $produk->stok_text }}
+                                    </span>
+                                    @if($produk->nearest_expiry)
+                                        <div style="font-size: 0.62rem; color: var(--pos-text-muted); margin-top: 3px; line-height: 1.2;">
+                                            <i class="fas fa-calendar-times me-1"></i>
+                                            Exp {{ $produk->nearest_expiry['date'] }}
+                                            @if($produk->nearest_expiry['sisa_hari'] !== null)
+                                                · {{ $produk->nearest_expiry['sisa_hari'] }} hari lagi
+                                            @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    <span
+                                        style="font-size: 0.62rem; font-weight: 600; color: #ef4444; background: rgba(239,68,68,0.12); padding: 1px 6px; border-radius: 4px;">
                                             <i class="fas fa-exclamation-triangle me-1"></i>Stok habis
                                         </span>
                                     @endif

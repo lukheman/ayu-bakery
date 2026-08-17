@@ -19,32 +19,36 @@ use Livewire\Component;
 class PointOfSale extends Component
 {
     public string $search = '';
+
     public array $cart = [];
+
     public string $metodePembayaran = 'tunai';
+
     public int $bayar = 0;
 
     public bool $showReceipt = false;
+
     public ?array $receiptData = null;
 
     /**
      * Add an item to the cart.
      *
-     * @param int $produkId
-     * @param string $unit  'besar' or 'kecil'
+     * @param  string  $unit  'besar' or 'kecil'
      */
     public function addToCart(int $produkId, string $unit = 'besar'): void
     {
         $produk = Produk::find($produkId);
-        if (!$produk)
+        if (! $produk) {
             return;
+        }
 
         // If product has no unit_kecil, always treat as 'besar'
-        if (!$produk->unit_kecil) {
+        if (! $produk->unit_kecil) {
             $unit = 'besar';
         }
 
         // Cart key distinguishes same product in different units
-        $key = $produkId . '_' . $unit;
+        $key = $produkId.'_'.$unit;
 
         $konversi = (int) ($produk->tingkat_konversi ?: 1);
 
@@ -82,6 +86,7 @@ class PointOfSale extends Component
     {
         if ($qty <= 0) {
             unset($this->cart[$key]);
+
             return;
         }
         if (isset($this->cart[$key])) {
@@ -143,11 +148,13 @@ class PointOfSale extends Component
     {
         if (empty($this->cart)) {
             session()->flash('error', 'Keranjang kosong!');
+
             return;
         }
 
         if ($this->bayar < $this->grandTotal) {
             session()->flash('error', 'Jumlah bayar kurang dari total!');
+
             return;
         }
 
@@ -165,7 +172,7 @@ class PointOfSale extends Component
                     $lastNum = (int) substr($lastStruk->nomor_struk, -4);
                     $sequence = $lastNum + 1;
                 }
-                $nomorStruk = "STR-{$today}-" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+                $nomorStruk = "STR-{$today}-".str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
                 $penjualan = PenjualanKasir::create([
                     'id_kasir' => $kasir->id,
@@ -192,15 +199,16 @@ class PointOfSale extends Component
                     if ($totalAvailable < $remainingQty) {
                         $unitLabel = $item['unit_label'];
                         throw new \Exception(
-                            "Stok '{$item['nama_produk']}' tidak mencukupi! " .
+                            "Stok '{$item['nama_produk']}' tidak mencukupi! ".
                             "(Dibutuhkan: {$remainingQty} unit kecil, Tersedia: {$totalAvailable} unit kecil)"
                         );
                     }
 
                     $isFirst = true;
                     foreach ($availableStocks as $stock) {
-                        if ($remainingQty <= 0)
+                        if ($remainingQty <= 0) {
                             break;
+                        }
 
                         $take = min($remainingQty, $stock->jumlah);
 
@@ -213,7 +221,7 @@ class PointOfSale extends Component
                             'jumlah' => $take,
                             'unit' => $item['unit_label'],
                             'jenis' => JenisMutasi::KELUAR,
-                            'keterangan' => 'POS ' . $nomorStruk . ' (' . $item['unit'] . ')',
+                            'keterangan' => 'POS '.$nomorStruk.' ('.$item['unit'].')',
                             'tanggal' => now(),
                         ]);
 
@@ -267,11 +275,15 @@ class PointOfSale extends Component
     public function render()
     {
         $produks = Produk::query()
+            ->with(['persediaan' => function ($query): void {
+                $query->where('jumlah', '>', 0)
+                    ->orderBy('tgl_exp', 'asc');
+            }])
             ->withSum('persediaan', 'jumlah')
             ->when($this->search, function ($query) {
-                $query->where('nama_produk', 'like', '%' . $this->search . '%')
-                    ->orWhere('kode_produk', 'like', '%' . $this->search . '%')
-                    ->orWhere('varian_rasa', 'like', '%' . $this->search . '%');
+                $query->where('nama_produk', 'like', '%'.$this->search.'%')
+                    ->orWhere('kode_produk', 'like', '%'.$this->search.'%')
+                    ->orWhere('varian_rasa', 'like', '%'.$this->search.'%');
             })
             ->orderBy('nama_produk')
             ->get();

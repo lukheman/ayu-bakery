@@ -3,6 +3,7 @@
 namespace App\Livewire\Kurir;
 
 use App\Enums\StatusPengiriman;
+use App\Enums\StatusPesanan;
 use App\Models\Transaksi;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -46,6 +47,10 @@ class PesananKurir extends Component
         }
 
         $transaksi->update(['status_pengiriman' => $status]);
+
+        if ($status === StatusPengiriman::DIKIRIM->value) {
+            $transaksi->pesanan->update(['status' => StatusPesanan::DIANTAR]);
+        }
 
         if ($status === StatusPengiriman::DITERIMA->value) {
             $transaksi->pesanan->update(['status' => StatusPesanan::SELESAI]);

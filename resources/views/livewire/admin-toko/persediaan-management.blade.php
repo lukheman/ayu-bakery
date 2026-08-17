@@ -162,60 +162,14 @@
                     </div>
 
                     <div class="row">
-                        @if($editingProduk && $editingProduk->unit_besar && $editingProduk->tingkat_konversi > 1)
-                            <div class="col-md-12 mb-3" x-data="{
-                                                qtyKecil: @entangle('jumlah'),
-                                                konversi: {{ $editingProduk->tingkat_konversi }},
-                                                updateKecil(val) {
-                                                    let newQty = val !== '' && val !== null ? Math.floor(parseFloat(val) * this.konversi) : 0;
-                                                    if (this.qtyKecil !== newQty) {
-                                                        this.qtyKecil = newQty;
-                                                    }
-                                                },
-                                                updateBesar(val) {
-                                                    let newBesar = val ? (val / this.konversi) : '';
-                                                    let currentBesar = parseFloat($refs.inputBesar.value || 0);
-                                                    if (currentBesar !== parseFloat(newBesar || 0)) {
-                                                        $refs.inputBesar.value = newBesar;
-                                                    }
-                                                }
-                                            }" x-init="
-                                                $watch('qtyKecil', value => updateBesar(value));
-                                                updateBesar(qtyKecil);
-                                            ">
-                                <div class="row g-2">
-
-                                    <div class="col-6">
-                                        <label for="jumlah_besar" class="form-label">Jumlah</label>
-                                        <input type="number" class="form-control" id="jumlah_besar" x-ref="inputBesar"
-                                            @input="updateKecil($event.target.value)" min="0" step="any">
-                                    </div>
-
-                                    <div class="col-6">
-                                        <label for="jumlah" class="form-label">Jumlah <span style="color: var(--danger-color);">*</span></label>
-                                        <input type="number" class="form-control @error('jumlah') is-invalid @enderror"
-                                            id="jumlah" x-model="qtyKecil" @input="updateBesar($event.target.value)" min="0">
-                                        @error('jumlah')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <small class="text-muted mt-1 d-block">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    1 {{ $editingProduk->unit_besar }} = {{ $editingProduk->tingkat_konversi }}
-                                    {{ $editingProduk->unit_kecil ?? 'pcs' }}
-                                </small>
-                            </div>
-                        @else
-                            <div class="col-md-12 mb-3">
-                                <label for="jumlah" class="form-label">Jumlah <span style="color: var(--danger-color);">*</span></label>
-                                <input type="number" class="form-control @error('jumlah') is-invalid @enderror" id="jumlah"
-                                    wire:model="jumlah" min="0">
-                                @error('jumlah')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        @endif
+                        <div class="col-md-12 mb-3">
+                            <label for="jumlah" class="form-label">Jumlah <span style="color: var(--danger-color);">*</span></label>
+                            <input type="number" class="form-control @error('jumlah') is-invalid @enderror" id="jumlah"
+                                wire:model="jumlah" min="0">
+                            @error('jumlah')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="row">

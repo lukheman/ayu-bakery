@@ -138,9 +138,11 @@
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
                                         </a>
-                                        <button wire:click="openDeliveryModal({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(99,102,241,0.1); color: var(--primary-color);" title="Atur Pengiriman">
-                                            <i class="fas fa-truck"></i> Pengiriman
-                                        </button>
+                                        @if(! $transaksi || $transaksi->status_pengiriman !== \App\Enums\StatusPengiriman::DITERIMA)
+                                            <button wire:click="openDeliveryModal({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(99,102,241,0.1); color: var(--primary-color);" title="Atur Pengiriman">
+                                                <i class="fas fa-truck"></i> Pengiriman
+                                            </button>
+                                        @endif
                                         @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR)
                                             <button wire:click="markAsPaid({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Konfirmasi Lunas">
                                                 <i class="fas fa-money-check-alt"></i> Lunas

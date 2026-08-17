@@ -19,15 +19,20 @@ class PersediaanManagement extends Component
 
     // Form fields
     public ?int $id_produk = null;
+
     public int $jumlah = 0;
+
     public ?string $tgl_produksi = null;
+
     public ?string $tgl_exp = null;
-    public ?Produk $editingProduk = null;
 
     // State
     public ?int $editingPersediaanId = null;
+
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
+
     public ?int $deletingPersediaanId = null;
 
     protected function rules(): array
@@ -52,11 +57,6 @@ class PersediaanManagement extends Component
         $this->resetPage();
     }
 
-    public function updatedIdProduk($value): void
-    {
-        $this->editingProduk = $value ? Produk::find($value) : null;
-    }
-
     public function openCreateModal(): void
     {
         $this->resetForm();
@@ -68,7 +68,6 @@ class PersediaanManagement extends Component
     {
         $persediaan = Persediaan::with('produk')->findOrFail($persediaanId);
         $this->editingPersediaanId = $persediaanId;
-        $this->editingProduk = $persediaan->produk;
         $this->id_produk = $persediaan->id_produk;
         $this->jumlah = $persediaan->jumlah;
         $this->tgl_produksi = $persediaan->tgl_produksi ? Carbon::parse($persediaan->tgl_produksi)->format('Y-m-d') : null;
@@ -78,7 +77,7 @@ class PersediaanManagement extends Component
 
     public function calculateSisaHariAndStatus(?string $tglExpStr): array
     {
-        if (!$tglExpStr) {
+        if (! $tglExpStr) {
             return ['sisa_hari' => 0, 'status_exp' => StatusExp::AMAN->value];
         }
 
@@ -166,7 +165,6 @@ class PersediaanManagement extends Component
         $this->tgl_produksi = null;
         $this->tgl_exp = null;
         $this->editingPersediaanId = null;
-        $this->editingProduk = null;
     }
 
     protected function hapusPersediaanExpired(): void
@@ -191,7 +189,7 @@ class PersediaanManagement extends Component
                 } else {
                     $status = StatusExp::EXPIRED->value;
                 }
-                
+
                 if ($status === StatusExp::EXPIRED->value) {
                     $persediaan->delete();
                 } elseif ($persediaan->sisa_hari !== $sisaHariRounded || $persediaan->status_exp !== $status) {
@@ -213,8 +211,8 @@ class PersediaanManagement extends Component
             ->with('produk')
             ->when($this->search, function ($query) {
                 $query->whereHas('produk', function ($q) {
-                    $q->where('nama_produk', 'like', '%' . $this->search . '%')
-                        ->orWhere('kode_produk', 'like', '%' . $this->search . '%');
+                    $q->where('nama_produk', 'like', '%'.$this->search.'%')
+                        ->orWhere('kode_produk', 'like', '%'.$this->search.'%');
                 });
             })
             ->orderBy('created_at', 'desc')
@@ -224,7 +222,7 @@ class PersediaanManagement extends Component
 
         return view('livewire.admin-toko.persediaan-management', [
             'persediaans' => $persediaans,
-            'produks' => $produks
+            'produks' => $produks,
         ]);
     }
 }
