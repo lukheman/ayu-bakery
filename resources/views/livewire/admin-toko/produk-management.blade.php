@@ -108,7 +108,7 @@
     {{-- Create/Edit Modal --}}
     @if ($showModal)
         <div class="modal-backdrop-custom" wire:click.self="closeModal">
-            <div class="modal-content-custom" wire:click.stop style="max-width: 700px;">
+            <div class="modal-content-custom" wire:click.stop style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header-custom">
                     <h5 class="modal-title-custom">
                         {{ $editingProdukId ? 'Edit Produk' : 'Tambah Produk Baru' }}
@@ -119,71 +119,63 @@
                 </div>
 
                 <form wire:submit="save">
+                    <div class="mb-3">
+                        <label for="nama_produk" class="form-label">Nama Produk <span style="color: var(--danger-color);">*</span></label>
+                        <input type="text" class="form-control @error('nama_produk') is-invalid @enderror" id="nama_produk"
+                            wire:model="nama_produk" placeholder="Masukkan nama produk">
+                        @error('nama_produk')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="kode_produk" class="form-label">Kode Produk <span style="color: var(--danger-color);">*</span></label>
+                        <input type="text" class="form-control @error('kode_produk') is-invalid @enderror" id="kode_produk"
+                            wire:model="kode_produk" placeholder="Contoh: PRD-001">
+                        @error('kode_produk')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="row">
-                        {{-- Left Column --}}
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nama_produk" class="form-label">Nama Produk <span style="color: var(--danger-color);">*</span></label>
-                                <input type="text" class="form-control @error('nama_produk') is-invalid @enderror" id="nama_produk"
-                                    wire:model="nama_produk" placeholder="Masukkan nama produk">
-                                @error('nama_produk')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="kode_produk" class="form-label">Kode Produk <span style="color: var(--danger-color);">*</span></label>
-                                <input type="text" class="form-control @error('kode_produk') is-invalid @enderror" id="kode_produk"
-                                    wire:model="kode_produk" placeholder="Contoh: PRD-001">
-                                @error('kode_produk')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="varian_rasa" class="form-label">Varian Rasa</label>
-                                <input type="text" class="form-control @error('varian_rasa') is-invalid @enderror" id="varian_rasa"
-                                    wire:model="varian_rasa" placeholder="Contoh: Coklat, Keju">
-                                @error('varian_rasa')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="deskripsi" class="form-label">Deskripsi</label>
-                                <textarea class="form-control @error('deskripsi') is-invalid @enderror" id="deskripsi"
-                                    wire:model="deskripsi" rows="3" placeholder="Deskripsi produk"></textarea>
-                                @error('deskripsi')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="unit" class="form-label">Unit <span style="color: var(--danger-color);">*</span></label>
+                            <input type="text" class="form-control @error('unit') is-invalid @enderror" id="unit"
+                                wire:model="unit" placeholder="Contoh: Pcs">
+                            @error('unit')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        {{-- Right Column --}}
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-12 mb-3">
-                                    <label for="harga_jual" class="form-label">Harga Jual <span style="color: var(--danger-color);">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">Rp</span>
-                                        <input type="number" class="form-control @error('harga_jual') is-invalid @enderror" id="harga_jual"
-                                            wire:model="harga_jual" min="0">
-                                    </div>
-                                    @error('harga_jual')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="harga_jual" class="form-label">Harga Jual <span style="color: var(--danger-color);">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">Rp</span>
+                                <input type="number" class="form-control @error('harga_jual') is-invalid @enderror" id="harga_jual"
+                                    wire:model="harga_jual" min="0">
                             </div>
-
-                            <div class="mb-3">
-                                <label for="unit" class="form-label">Unit <span style="color: var(--danger-color);">*</span></label>
-                                <input type="text" class="form-control @error('unit') is-invalid @enderror" id="unit"
-                                    wire:model="unit" placeholder="Contoh: Pcs">
-                                @error('unit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            @error('harga_jual')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="varian_rasa" class="form-label">Varian Rasa</label>
+                        <input type="text" class="form-control @error('varian_rasa') is-invalid @enderror" id="varian_rasa"
+                            wire:model="varian_rasa" placeholder="Contoh: Coklat, Keju">
+                        @error('varian_rasa')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="deskripsi" class="form-label">Deskripsi</label>
+                        <textarea class="form-control @error('deskripsi') is-invalid @enderror" id="deskripsi"
+                            wire:model="deskripsi" rows="3" placeholder="Deskripsi produk"></textarea>
+                        @error('deskripsi')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- Image Upload --}}
