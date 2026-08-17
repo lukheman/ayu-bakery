@@ -186,18 +186,13 @@
                                 <div class="row g-2">
 
                                     <div class="col-6">
-                                        <label for="jumlah_besar" class="form-label">
-                                            Jumlah ({{ $editingProduk->unit_besar }})
-                                        </label>
+                                        <label for="jumlah_besar" class="form-label">Jumlah</label>
                                         <input type="number" class="form-control" id="jumlah_besar" x-ref="inputBesar"
                                             @input="updateKecil($event.target.value)" min="0" step="any">
                                     </div>
 
                                     <div class="col-6">
-                                        <label for="jumlah" class="form-label">
-                                            Jumlah ({{ $editingProduk->unit_kecil ?? 'pcs' }})
-                                            <span style="color: var(--danger-color);">*</span>
-                                        </label>
+                                        <label for="jumlah" class="form-label">Jumlah <span style="color: var(--danger-color);">*</span></label>
                                         <input type="number" class="form-control @error('jumlah') is-invalid @enderror"
                                             id="jumlah" x-model="qtyKecil" @input="updateBesar($event.target.value)" min="0">
                                         @error('jumlah')
@@ -213,10 +208,7 @@
                             </div>
                         @else
                             <div class="col-md-12 mb-3">
-                                <label for="jumlah" class="form-label">
-                                    Jumlah {{ $editingProduk?->unit_kecil ?? '' }}
-                                    <span style="color: var(--danger-color);">*</span>
-                                </label>
+                                <label for="jumlah" class="form-label">Jumlah <span style="color: var(--danger-color);">*</span></label>
                                 <input type="number" class="form-control @error('jumlah') is-invalid @enderror" id="jumlah"
                                     wire:model="jumlah" min="0">
                                 @error('jumlah')

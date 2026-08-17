@@ -128,7 +128,7 @@
                 <tbody>
                     @forelse($pesanans as $pesanan)
                         @php
-                            $statusEnum = \App\Enums\StatusPesanan::tryFrom($pesanan->status);
+                            $statusEnum = $pesanan->status;
                             $nilai = $pesanan->transaksi?->total_bayar ?? $pesanan->itemPesanan->sum('subtotal');
                             $colorMap = ['warning' => '245,158,11', 'primary' => '99,102,241', 'success' => '16,185,129', 'danger' => '239,68,68'];
                         @endphp

@@ -3,7 +3,6 @@
 namespace App\Livewire\Kurir;
 
 use App\Enums\StatusPengiriman;
-use App\Enums\StatusPesanan;
 use App\Models\Transaksi;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -18,6 +17,7 @@ class PesananKurir extends Component
     public string $filterStatus = '';
 
     public ?int $detailPesananId = null;
+
     public bool $showDetailModal = false;
 
     public function openDetail(int $pesananId): void
@@ -39,8 +39,9 @@ class PesananKurir extends Component
             ->where('id_kurir', $kurir->id)
             ->first();
 
-        if (!$transaksi) {
+        if (! $transaksi) {
             session()->flash('error', 'Transaksi tidak ditemukan.');
+
             return;
         }
 
@@ -67,8 +68,10 @@ class PesananKurir extends Component
 
         $detailTransaksi = null;
         if ($this->detailPesananId) {
-            $detailTransaksi = Transaksi::where('id_kurir', $kurir->id)
-                ->whereHas('pesanan', fn($q) => $q->where('id', $this->detailPesananId))
+            $detailTransaksi = Transaksi::where(function ($q) use ($kurir) {
+                $q->where('id_kurir', $kurir->id)->orWhereNull('id_kurir');
+            })
+                ->whereHas('pesanan', fn ($q) => $q->where('id', $this->detailPesananId))
                 ->with(['pesanan.reseller', 'pesanan.itemPesanan.produk'])
                 ->first();
         }

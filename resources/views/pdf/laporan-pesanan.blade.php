@@ -149,7 +149,7 @@
     {{-- Orders --}}
     @foreach($pesanans as $pesanan)
         @php
-            $statusEnum = \App\Enums\StatusPesanan::tryFrom($pesanan->status);
+            $statusEnum = $pesanan->status;
             $nilai = $pesanan->transaksi?->total_bayar ?? $pesanan->itemPesanan->sum('subtotal');
         @endphp
         <div class="order-group">

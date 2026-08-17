@@ -29,8 +29,8 @@
     @forelse ($transaksis as $transaksi)
         @php
             $pesanan = $transaksi->pesanan;
-            $pengirimanEnum = \App\Enums\StatusPengiriman::tryFrom($transaksi->status_pengiriman);
-            $statusEnum = \App\Enums\StatusPesanan::tryFrom($pesanan->status);
+            $pengirimanEnum = $transaksi->status_pengiriman;
+            $statusEnum = $pesanan->status;
             $totalBayar = $pesanan->itemPesanan->sum('subtotal');
             $totalItem = $pesanan->itemPesanan->sum('jumlah');
         @endphp
@@ -72,12 +72,12 @@
                         style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500; padding: 0.4rem 1rem; font-size: 0.8rem;">
                         <i class="fas fa-eye me-1"></i> Detail
                     </button>
-                    @if($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::MENUNGGU->value)
+                    @if($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::MENUNGGU)
                         <button wire:click="updateStatusPengiriman({{ $transaksi->id }}, 'dikirim')" class="btn btn-sm"
                             style="background: rgba(99,102,241,0.1); color: var(--primary-color); border: none; border-radius: 8px; font-weight: 600; padding: 0.4rem 1rem; font-size: 0.8rem;">
                             <i class="fas fa-shipping-fast me-1"></i> Mulai Kirim
                         </button>
-                    @elseif($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::DIKIRIM->value)
+                    @elseif($transaksi->status_pengiriman === \App\Enums\StatusPengiriman::DIKIRIM)
                         <a href="{{ route('kurir.scan') }}" class="btn btn-sm"
                             style="background: rgba(16,185,129,0.1); color: var(--success-color); border: none; border-radius: 8px; font-weight: 600; padding: 0.4rem 1rem; font-size: 0.8rem;">
                             <i class="fas fa-qrcode me-1"></i> Scan Konfirmasi
@@ -90,7 +90,9 @@
         <div class="modern-card text-center py-5">
             <i class="fas fa-truck mb-3" style="font-size: 3rem; color: var(--text-muted);"></i>
             <h5 style="color: var(--text-primary); font-weight: 600;">Belum Ada Pesanan</h5>
-            <p style="color: var(--text-secondary);">Pesanan yang ditugaskan kepada Anda akan muncul di sini.</p>
+            <p style="color: var(--text-secondary);">
+                Pesanan yang ditugaskan kepada Anda akan muncul di sini.
+            </p>
         </div>
     @endforelse
 

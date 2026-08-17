@@ -14,9 +14,13 @@ use Livewire\Component;
 class ScanQr extends Component
 {
     public string $kodeKonfirmasi = '';
+
     public bool $scanResult = false;
+
     public string $resultMessage = '';
+
     public string $resultType = '';
+
     public ?array $pesananInfo = null;
 
     public function confirmDelivery(): void
@@ -25,6 +29,7 @@ class ScanQr extends Component
             $this->resultType = 'error';
             $this->resultMessage = 'Kode konfirmasi tidak boleh kosong.';
             $this->scanResult = true;
+
             return;
         }
 
@@ -33,19 +38,20 @@ class ScanQr extends Component
         $transaksi = Transaksi::where('id_kurir', $kurir->id)
             ->whereHas('pesanan', function ($q) {
                 $q->where('kode_konfirmasi', $this->kodeKonfirmasi)
-                    ->where('status', StatusPesanan::DIANTAR->value);
+                    ->where('status', StatusPesanan::DIANTAR);
             })
             ->with(['pesanan.reseller', 'pesanan.itemPesanan.produk'])
             ->first();
 
-        if (!$transaksi) {
+        if (! $transaksi) {
             $this->resultType = 'error';
             $this->resultMessage = 'Pesanan tidak ditemukan, kode tidak valid, atau pesanan bukan milik Anda.';
             $this->scanResult = true;
+
             return;
         }
 
-        $transaksi->update(['status_pengiriman' => StatusPengiriman::DITERIMA->value]);
+        $transaksi->update(['status_pengiriman' => StatusPengiriman::DITERIMA]);
         $transaksi->pesanan->update(['status' => StatusPesanan::SELESAI]);
 
         $this->pesananInfo = [

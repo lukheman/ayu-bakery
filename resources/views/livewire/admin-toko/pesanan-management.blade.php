@@ -57,7 +57,7 @@
                 <tbody>
                     @forelse ($pesanans as $pesanan)
                         @php
-                            $statusEnum = \App\Enums\StatusPesanan::tryFrom($pesanan->status);
+                            $statusEnum = $pesanan->status;
                             $totalItem = $pesanan->itemPesanan->sum('jumlah');
                             $totalBayar = $pesanan->itemPesanan->sum('subtotal');
                             $transaksi = $pesanan->transaksi;
@@ -95,9 +95,9 @@
                                 </span>
                             </td>
                             <td>
-                                @if($transaksi && $pesanan->status !== \App\Enums\StatusPesanan::PENDING->value && $pesanan->status !== \App\Enums\StatusPesanan::DIBATALKAN->value)
+                                @if($transaksi && $pesanan->status !== \App\Enums\StatusPesanan::PENDING && $pesanan->status !== \App\Enums\StatusPesanan::DIBATALKAN)
                                     @php
-                                        $pengirimanEnum = \App\Enums\StatusPengiriman::tryFrom($transaksi->status_pengiriman);
+                                        $pengirimanEnum = $transaksi->status_pengiriman;
                                     @endphp
                                     <div style="font-size: 0.85rem;">
                                         <span style="color: var(--{{ $pengirimanEnum->color() }}-color); font-weight: 600;">
@@ -115,38 +115,38 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-flex justify-content-end gap-2">
-                                    @if ($pesanan->status === \App\Enums\StatusPesanan::PENDING->value)
+                                    @if ($pesanan->status === \App\Enums\StatusPesanan::PENDING)
                                         <button wire:click="rejectPesanan({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(239,68,68,0.1); color: var(--danger-color);" title="Tolak Pesanan">
                                             <i class="fas fa-times"></i> Tolak
                                         </button>
                                         <button wire:click="acceptPesanan({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Terima Pesanan">
                                             <i class="fas fa-check"></i> Terima
                                         </button>
-                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::DITERIMA->value)
+                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::DITERIMA)
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
                                         </a>
                                         <button wire:click="packPesanan({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(59,130,246,0.1); color: var(--primary-color);" title="Proses Packing">
                                             <i class="fas fa-box"></i> Packing
                                         </button>
-                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR->value)
+                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR)
                                             <button wire:click="markAsPaid({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Konfirmasi Lunas">
                                                 <i class="fas fa-money-check-alt"></i> Lunas
                                             </button>
                                         @endif
-                                    @elseif (in_array($pesanan->status, [\App\Enums\StatusPesanan::DIPACKING->value, \App\Enums\StatusPesanan::DIANTAR->value]))
+                                    @elseif (in_array($pesanan->status, [\App\Enums\StatusPesanan::DIPACKING, \App\Enums\StatusPesanan::DIANTAR]))
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
                                         </a>
                                         <button wire:click="openDeliveryModal({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(99,102,241,0.1); color: var(--primary-color);" title="Atur Pengiriman">
                                             <i class="fas fa-truck"></i> Pengiriman
                                         </button>
-                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR->value)
+                                        @if($transaksi && $transaksi->status_pembayaran === \App\Enums\StatusPembayaran::BELUM_BAYAR)
                                             <button wire:click="markAsPaid({{ $pesanan->id }})" class="btn btn-sm btn-action" style="background: rgba(16,185,129,0.1); color: var(--success-color);" title="Konfirmasi Lunas">
                                                 <i class="fas fa-money-check-alt"></i> Lunas
                                             </button>
                                         @endif
-                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::SELESAI->value && $pesanan->kode_konfirmasi)
+                                    @elseif ($pesanan->status === \App\Enums\StatusPesanan::SELESAI && $pesanan->kode_konfirmasi)
                                         <a href="{{ route('admintoko.pesanan.cetak-nota', $pesanan->id) }}" target="_blank" class="btn btn-sm btn-action" style="background: rgba(245,158,11,0.1); color: var(--warning-color);" title="Cetak Nota">
                                             <i class="fas fa-print"></i> Cetak Nota
                                         </a>
@@ -192,18 +192,6 @@
                             <option value="{{ $kur->id }}">{{ $kur->nama }}</option>
                         @endforeach
                     </select>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label" style="font-weight: 600; color: var(--text-primary);">Status Pengiriman</label>
-                    <select class="form-select" wire:model="selectedStatusPengiriman" style="background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary);">
-                        @foreach(\App\Enums\StatusPengiriman::cases() as $sp)
-                            <option value="{{ $sp->value }}">{{ $sp->label() }}</option>
-                        @endforeach
-                    </select>
-                    @if($selectedStatusPengiriman === \App\Enums\StatusPengiriman::DITERIMA->value)
-                        <div class="form-text text-success mt-2"><i class="fas fa-info-circle me-1"></i> Menyimpan status ini akan merubah pesanan menjadi "Selesai".</div>
-                    @endif
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">

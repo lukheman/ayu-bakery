@@ -31,7 +31,7 @@
     <div class="d-flex flex-column gap-3">
         @forelse ($pesanans as $pesanan)
             @php
-                $statusEnum = \App\Enums\StatusPesanan::tryFrom($pesanan->status);
+                $statusEnum = $pesanan->status;
                 $items = $pesanan->itemPesanan ?? collect();
                 $total = $items->sum('subtotal');
             @endphp

@@ -5,7 +5,6 @@ namespace App\Livewire\PemilikToko;
 use App\Enums\StatusPesanan;
 use App\Models\Pesanan;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -18,8 +17,11 @@ class LaporanPesanan extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $filterStatus = '';
+
     public string $tanggalDari = '';
+
     public string $tanggalSampai = '';
 
     public function mount(): void
@@ -32,14 +34,17 @@ class LaporanPesanan extends Component
     {
         $this->resetPage();
     }
+
     public function updatedFilterStatus(): void
     {
         $this->resetPage();
     }
+
     public function updatedTanggalDari(): void
     {
         $this->resetPage();
     }
+
     public function updatedTanggalSampai(): void
     {
         $this->resetPage();
@@ -49,13 +54,13 @@ class LaporanPesanan extends Component
     {
         return Pesanan::query()
             ->with(['reseller', 'itemPesanan.produk', 'transaksi'])
-            ->when($this->tanggalDari, fn($q) => $q->whereDate('created_at', '>=', $this->tanggalDari))
-            ->when($this->tanggalSampai, fn($q) => $q->whereDate('created_at', '<=', $this->tanggalSampai))
-            ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
+            ->when($this->tanggalDari, fn ($q) => $q->whereDate('created_at', '>=', $this->tanggalDari))
+            ->when($this->tanggalSampai, fn ($q) => $q->whereDate('created_at', '<=', $this->tanggalSampai))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
-                    $query->where('id', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('reseller', fn($r) => $r->where('nama', 'like', '%' . $this->search . '%'));
+                    $query->where('id', 'like', '%'.$this->search.'%')
+                        ->orWhereHas('reseller', fn ($r) => $r->where('nama', 'like', '%'.$this->search.'%'));
                 });
             })
             ->orderByDesc('created_at');
@@ -76,38 +81,38 @@ class LaporanPesanan extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'laporan-pesanan-' . now()->format('Y-m-d') . '.pdf');
+        }, 'laporan-pesanan-'.now()->format('Y-m-d').'.pdf');
     }
 
     private function calculateStats($data = null)
     {
         if ($data) {
             $totalPesanan = $data->count();
-            $totalPending = $data->where('status', StatusPesanan::PENDING->value)->count();
-            $totalDiterima = $data->whereIn('status', [StatusPesanan::DITERIMA->value, StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])->count();
-            $totalSelesai = $data->where('status', StatusPesanan::SELESAI->value)->count();
-            $totalDibatalkan = $data->where('status', StatusPesanan::DIBATALKAN->value)->count();
-            $totalNilai = $data->sum(fn($p) => $p->transaksi?->total_bayar ?? $p->itemPesanan->sum('subtotal'));
+            $totalPending = $data->where('status', StatusPesanan::PENDING)->count();
+            $totalDiterima = $data->whereIn('status', [StatusPesanan::DITERIMA, StatusPesanan::DIPACKING, StatusPesanan::DIANTAR])->count();
+            $totalSelesai = $data->where('status', StatusPesanan::SELESAI)->count();
+            $totalDibatalkan = $data->where('status', StatusPesanan::DIBATALKAN)->count();
+            $totalNilai = $data->sum(fn ($p) => $p->transaksi?->total_bayar ?? $p->itemPesanan->sum('subtotal'));
         } else {
-            $query = fn() => Pesanan::query()
-                ->when($this->tanggalDari, fn($q) => $q->whereDate('created_at', '>=', $this->tanggalDari))
-                ->when($this->tanggalSampai, fn($q) => $q->whereDate('created_at', '<=', $this->tanggalSampai))
-                ->when($this->filterStatus, fn($q) => $q->where('status', $this->filterStatus))
+            $query = fn () => Pesanan::query()
+                ->when($this->tanggalDari, fn ($q) => $q->whereDate('created_at', '>=', $this->tanggalDari))
+                ->when($this->tanggalSampai, fn ($q) => $q->whereDate('created_at', '<=', $this->tanggalSampai))
+                ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
                 ->when($this->search, function ($q) {
                     $q->where(function ($query) {
-                        $query->where('id', 'like', '%' . $this->search . '%')
-                            ->orWhereHas('reseller', fn($r) => $r->where('nama', 'like', '%' . $this->search . '%'));
+                        $query->where('id', 'like', '%'.$this->search.'%')
+                            ->orWhereHas('reseller', fn ($r) => $r->where('nama', 'like', '%'.$this->search.'%'));
                     });
                 });
 
             $totalPesanan = $query()->count();
-            $totalPending = $query()->where('status', StatusPesanan::PENDING->value)->count();
-            $totalDiterima = $query()->whereIn('status', [StatusPesanan::DITERIMA->value, StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])->count();
-            $totalSelesai = $query()->where('status', StatusPesanan::SELESAI->value)->count();
-            $totalDibatalkan = $query()->where('status', StatusPesanan::DIBATALKAN->value)->count();
+            $totalPending = $query()->where('status', StatusPesanan::PENDING)->count();
+            $totalDiterima = $query()->whereIn('status', [StatusPesanan::DITERIMA, StatusPesanan::DIPACKING, StatusPesanan::DIANTAR])->count();
+            $totalSelesai = $query()->where('status', StatusPesanan::SELESAI)->count();
+            $totalDibatalkan = $query()->where('status', StatusPesanan::DIBATALKAN)->count();
             $totalNilai = 0;
             $query()->with(['transaksi', 'itemPesanan'])->chunk(100, function ($chunk) use (&$totalNilai) {
-                $totalNilai += $chunk->sum(fn($p) => $p->transaksi?->total_bayar ?? $p->itemPesanan->sum('subtotal'));
+                $totalNilai += $chunk->sum(fn ($p) => $p->transaksi?->total_bayar ?? $p->itemPesanan->sum('subtotal'));
             });
         }
 

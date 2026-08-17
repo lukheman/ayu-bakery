@@ -17,7 +17,7 @@ enum StatusPengiriman: string
     {
         return match ($this) {
             self::MENUNGGU => 'Menunggu',
-            self::DIKIRIM => 'Dikirim',
+            self::DIKIRIM => 'Diserahkan ke Kurir',
             self::DITERIMA => 'Diterima',
         };
     }

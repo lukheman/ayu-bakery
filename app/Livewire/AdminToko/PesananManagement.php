@@ -2,9 +2,11 @@
 
 namespace App\Livewire\AdminToko;
 
+use App\Enums\JenisMutasi;
 use App\Enums\StatusPembayaran;
 use App\Enums\StatusPengiriman;
 use App\Enums\StatusPesanan;
+use App\Models\ItemPesanan;
 use App\Models\Kurir;
 use App\Models\MutasiStok;
 use App\Models\Persediaan;
@@ -31,11 +33,13 @@ class PesananManagement extends Component
     public string $filterStatus = '';
 
     public bool $showDeliveryModal = false;
+
     public ?int $selectedPesananId = null;
+
     public ?int $selectedKurirId = null;
-    public string $selectedStatusPengiriman = '';
 
     public bool $showBuktiModal = false;
+
     public ?string $selectedBuktiUrl = null;
 
     public function updatedSearch(): void
@@ -52,8 +56,9 @@ class PesananManagement extends Component
     {
         $pesanan = Pesanan::with('itemPesanan.produk')->find($id);
 
-        if (!$pesanan || $pesanan->status !== StatusPesanan::PENDING->value) {
+        if (! $pesanan || $pesanan->status !== StatusPesanan::PENDING) {
             session()->flash('error', 'Pesanan tidak dapat diproses.');
+
             return;
         }
 
@@ -80,8 +85,9 @@ class PesananManagement extends Component
                     $originalCreatedAt = $item->created_at;
 
                     foreach ($availableStocks as $stock) {
-                        if ($remainingQty <= 0)
+                        if ($remainingQty <= 0) {
                             break;
+                        }
 
                         $take = min($remainingQty, $stock->jumlah);
 
@@ -95,8 +101,8 @@ class PesananManagement extends Component
                             'id_persediaan' => $stock->id,
                             'jumlah' => $take,
                             'unit' => $item->unit,
-                            'jenis' => \App\Enums\JenisMutasi::KELUAR,
-                            'keterangan' => 'Pesanan #' . str_pad($pesanan->id, 5, '0', STR_PAD_LEFT),
+                            'jenis' => JenisMutasi::KELUAR,
+                            'keterangan' => 'Pesanan #'.str_pad($pesanan->id, 5, '0', STR_PAD_LEFT),
                             'tanggal' => now(),
                         ]);
 
@@ -111,7 +117,7 @@ class PesananManagement extends Component
                             $isFirst = false;
                         } else {
                             // Jika persediaan berbeda, buat item pesanan baru (split)
-                            \App\Models\ItemPesanan::create([
+                            ItemPesanan::create([
                                 'id_pesanan' => $pesanan->id,
                                 'id_produk' => $item->id_produk,
                                 'id_persediaan' => $stock->id,
@@ -156,8 +162,9 @@ class PesananManagement extends Component
     {
         $pesanan = Pesanan::find($id);
 
-        if (!$pesanan || $pesanan->status !== StatusPesanan::PENDING->value) {
+        if (! $pesanan || $pesanan->status !== StatusPesanan::PENDING) {
             session()->flash('error', 'Pesanan tidak dapat dibatalkan.');
+
             return;
         }
 
@@ -169,8 +176,9 @@ class PesananManagement extends Component
     {
         $pesanan = Pesanan::find($id);
 
-        if (!$pesanan || $pesanan->status !== StatusPesanan::DITERIMA->value) {
+        if (! $pesanan || $pesanan->status !== StatusPesanan::DITERIMA) {
             session()->flash('error', 'Hanya pesanan yang diterima yang dapat dipacking.');
+
             return;
         }
 
@@ -182,57 +190,53 @@ class PesananManagement extends Component
     {
         $pesanan = Pesanan::with('transaksi')->find($id);
 
-        if (!$pesanan || !in_array($pesanan->status, [StatusPesanan::DIPACKING->value, StatusPesanan::DIANTAR->value])) {
+        if (! $pesanan || ! in_array($pesanan->status, [StatusPesanan::DIPACKING, StatusPesanan::DIANTAR])) {
             session()->flash('error', 'Hanya pesanan yang sedang dipacking atau diantar yang dapat diatur pengirimannya.');
+
             return;
         }
 
         $this->selectedPesananId = $id;
         $this->selectedKurirId = $pesanan->transaksi?->id_kurir;
-        $this->selectedStatusPengiriman = $pesanan->transaksi?->status_pengiriman ?? StatusPengiriman::MENUNGGU->value;
         $this->showDeliveryModal = true;
     }
 
     public function closeDeliveryModal(): void
     {
         $this->showDeliveryModal = false;
-        $this->reset(['selectedPesananId', 'selectedKurirId', 'selectedStatusPengiriman']);
+        $this->reset(['selectedPesananId', 'selectedKurirId']);
     }
 
     public function updateDelivery(): void
     {
         $this->validate([
-            'selectedStatusPengiriman' => ['required', 'string'],
+            'selectedKurirId' => ['nullable', 'integer', 'exists:kurir,id'],
         ]);
 
         $pesanan = Pesanan::with('transaksi')->find($this->selectedPesananId);
 
-        if (!$pesanan || !$pesanan->transaksi) {
+        if (! $pesanan || ! $pesanan->transaksi) {
             return;
         }
 
         $pesanan->transaksi->update([
             'id_kurir' => $this->selectedKurirId ?: null,
-            'status_pengiriman' => $this->selectedStatusPengiriman,
+            'status_pengiriman' => StatusPengiriman::DIKIRIM,
         ]);
 
-        if ($this->selectedStatusPengiriman === StatusPengiriman::DITERIMA->value) {
-            $pesanan->update(['status' => StatusPesanan::SELESAI]);
-        } elseif ($this->selectedStatusPengiriman === StatusPengiriman::DIKIRIM->value) {
-            $pesanan->update(['status' => StatusPesanan::DIANTAR]);
-        }
+        $pesanan->update(['status' => StatusPesanan::DIANTAR]);
 
         $this->closeDeliveryModal();
-        session()->flash('success', 'Status pengiriman berhasil diperbarui.');
+        session()->flash('success', 'Kurir berhasil ditetapkan dan pesanan diserahkan ke kurir.');
     }
 
     public function markAsPaid(int $id): void
     {
         $pesanan = Pesanan::with('transaksi')->find($id);
-        
+
         if ($pesanan && $pesanan->transaksi) {
             $pesanan->transaksi->update([
-                'status_pembayaran' => \App\Enums\StatusPembayaran::LUNAS->value
+                'status_pembayaran' => StatusPembayaran::LUNAS,
             ]);
             session()->flash('success', 'Pembayaran berhasil dikonfirmasi (Lunas).');
         }
@@ -256,8 +260,8 @@ class PesananManagement extends Component
             ->with(['reseller', 'itemPesanan.produk', 'transaksi.kurir'])
             ->when($this->search, function ($query) {
                 $query->whereHas('reseller', function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%');
-                })->orWhere('id', 'like', '%' . $this->search . '%');
+                    $q->where('nama', 'like', '%'.$this->search.'%');
+                })->orWhere('id', 'like', '%'.$this->search.'%');
             })
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);

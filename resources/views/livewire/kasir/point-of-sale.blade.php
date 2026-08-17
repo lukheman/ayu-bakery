@@ -205,12 +205,20 @@
 
                 {{-- Payment Method --}}
                 <div class="mb-2">
-                    <select wire:model="metodePembayaran" class="form-select"
+                    <select wire:model.live="metodePembayaran" class="form-select"
                         style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">
                         <option value="tunai">💵 Tunai</option>
-                        <option value="transfer">💳 Transfer</option>
+                        <option value="transfer">💳 Transfer / QRIS</option>
                     </select>
                 </div>
+
+                {{-- QRIS Barcode Display --}}
+                @if($metodePembayaran === 'transfer')
+                    <div class="text-center mb-3 p-3" style="background: white; border-radius: 8px; border: 1px dashed var(--pos-border);">
+                        <p style="font-size: 0.75rem; color: var(--pos-text-muted); margin-bottom: 0.5rem; font-weight: 600;">Scan Barcode / QRIS untuk Membayar</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Payment-{{ $this->grandTotal }}" alt="Barcode Pembayaran" style="width: 120px; height: 120px;">
+                    </div>
+                @endif
 
                 {{-- Amount Paid --}}
                 <div class="mb-2">

@@ -8,20 +8,22 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 #[Title('Pesanan Saya - Ayu Bakery')]
 #[Layout('layouts.reseller')]
 class PesananSaya extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     #[Url(as: 'status')]
     public string $filterStatus = '';
 
     public ?int $detailPesananId = null;
+
     public bool $showDetailModal = false;
+
     public $bukti_pembayaran;
 
     public function updatedFilterStatus(): void
@@ -46,7 +48,7 @@ class PesananSaya extends Component
         $reseller = auth('reseller')->user();
         $pesanan = Pesanan::where('id', $pesananId)
             ->where('id_reseller', $reseller->id)
-            ->where('status', StatusPesanan::PENDING->value)
+            ->where('status', StatusPesanan::PENDING)
             ->first();
 
         if ($pesanan) {
@@ -70,7 +72,7 @@ class PesananSaya extends Component
 
         if ($pesanan && $pesanan->transaksi) {
             $path = $this->bukti_pembayaran->store('bukti_pembayaran', 'public');
-            
+
             $pesanan->transaksi->update([
                 'bukti_pembayaran' => $path,
             ]);

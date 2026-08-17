@@ -168,7 +168,7 @@
         </tr>
         <tr>
             <td>Status</td>
-            <td class="fw-bold">{{ ucfirst($pesanan->status) }}</td>
+            <td class="fw-bold">{{ $pesanan->status?->label() }}</td>
         </tr>
     </table>
 

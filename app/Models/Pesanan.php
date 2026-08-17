@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusPesanan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,13 @@ class Pesanan extends Model
         'catatan',
         'kode_konfirmasi',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => StatusPesanan::class,
+        ];
+    }
 
     public function reseller(): BelongsTo
     {

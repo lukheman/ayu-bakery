@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StatusPembayaran;
+use App\Enums\StatusPengiriman;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +31,8 @@ class Transaksi extends Model
     {
         return [
             'tanggal' => 'date',
+            'status_pembayaran' => StatusPembayaran::class,
+            'status_pengiriman' => StatusPengiriman::class,
         ];
     }
 
