@@ -220,38 +220,9 @@
                         style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; padding: 0.6rem 0.75rem;">
                 </div>
 
-                {{-- Quick Amount Buttons --}}
-                <div class="d-flex gap-1 mb-2 flex-wrap">
-                    @foreach([1000, 2000, 5000, 10000, 20000, 50000, 100000] as $nominal)
-                        <button wire:click="$set('bayar', {{ $nominal }})"
-                            style="flex: 1; min-width: 60px; padding: 4px 6px; font-size: 0.65rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--pos-border); background: var(--pos-surface-2); color: var(--pos-text-secondary); cursor: pointer; transition: all 0.1s;"
-                            onmouseover="this.style.borderColor='var(--pos-primary)'; this.style.color='var(--pos-primary-light)'"
-                            onmouseout="this.style.borderColor='var(--pos-border)'; this.style.color='var(--pos-text-secondary)'">
-                            {{ number_format($nominal / 1000) }}rb
-                        </button>
-                    @endforeach
-                    <button wire:click="$set('bayar', {{ $this->grandTotal }})"
-                        style="flex: 1; min-width: 60px; padding: 4px 6px; font-size: 0.65rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--pos-success); background: rgba(16,185,129,0.1); color: var(--pos-success); cursor: pointer;">
-                        PAS
-                    </button>
-                </div>
-
-                {{-- Change --}}
-                @if($bayar >= $this->grandTotal && $bayar > 0)
-                    <div class="d-flex justify-content-between align-items-center mb-3"
-                        style="padding: 0.5rem 0.75rem; background: rgba(16,185,129,0.1); border-radius: 8px; border: 1px solid rgba(16,185,129,0.2);">
-                        <span style="font-weight: 500; font-size: 0.85rem; color: var(--pos-success);">KEMBALIAN</span>
-                        <span
-                            style="font-weight: 800; font-size: 1.1rem; color: var(--pos-success); font-family: 'JetBrains Mono', monospace;">
-                            Rp {{ number_format($this->kembalian, 0, ',', '.') }}
-                        </span>
-                    </div>
-                @endif
-
                 {{-- Pay Button --}}
-                <button wire:click="processPayment" class="w-100" @if($bayar < $this->grandTotal) disabled @endif
-                    style="padding: 0.85rem; font-size: 1rem; font-weight: 800; border-radius: 10px; border: none; cursor: pointer; transition: all 0.15s;
-                                        {{ $bayar >= $this->grandTotal ? 'background: var(--pos-success); color: white;' : 'background: var(--pos-surface-2); color: var(--pos-text-muted); cursor: not-allowed;' }}">
+                <button wire:click="processPayment" class="w-100"
+                    style="padding: 0.85rem; font-size: 1rem; font-weight: 800; border-radius: 10px; border: none; cursor: pointer; transition: all 0.15s; background: var(--pos-success); color: white;">
                     <i class="fas fa-check-circle me-2"></i>BAYAR
                 </button>
             </div>
