@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\StatusExp;
+use App\Models\Persediaan;
+use Carbon\Carbon;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-use App\Models\Persediaan;
-use Carbon\Carbon;
-use App\Enums\StatusExp;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -22,7 +22,7 @@ Schedule::call(function () {
 
         if ($sisaHariRounded > 14) {
             $status = StatusExp::AMAN->value;
-        } elseif ($sisaHariRounded > 3) {
+        } elseif ($sisaHariRounded >= 0) {
             $status = StatusExp::HAMPIR_EXP->value;
         } else {
             $status = StatusExp::EXPIRED->value;

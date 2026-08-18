@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusExp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,7 @@ class Persediaan extends Model
         return [
             'tgl_produksi' => 'date',
             'tgl_exp' => 'date',
+            'status_exp' => StatusExp::class,
         ];
     }
 

@@ -78,7 +78,7 @@ class PersediaanManagement extends Component
     public function calculateSisaHariAndStatus(?string $tglExpStr): array
     {
         if (! $tglExpStr) {
-            return ['sisa_hari' => 0, 'status_exp' => StatusExp::AMAN->value];
+            return ['sisa_hari' => 0, 'status_exp' => StatusExp::AMAN];
         }
 
         $tglExp = Carbon::parse($tglExpStr)->startOfDay();
@@ -88,11 +88,11 @@ class PersediaanManagement extends Component
         $sisaHariRounded = (int) ceil($sisaHari);
 
         if ($sisaHariRounded > 14) {
-            $status = StatusExp::AMAN->value;
+            $status = StatusExp::AMAN;
         } elseif ($sisaHariRounded >= 0) {
-            $status = StatusExp::HAMPIR_EXP->value;
+            $status = StatusExp::HAMPIR_EXP;
         } else {
-            $status = StatusExp::EXPIRED->value;
+            $status = StatusExp::EXPIRED;
         }
 
         return ['sisa_hari' => $sisaHariRounded, 'status_exp' => $status];
@@ -183,14 +183,14 @@ class PersediaanManagement extends Component
             } else {
                 // Update status agar selalu real-time
                 if ($sisaHariRounded > 14) {
-                    $status = StatusExp::AMAN->value;
-                } elseif ($sisaHariRounded > 3) {
-                    $status = StatusExp::HAMPIR_EXP->value;
+                    $status = StatusExp::AMAN;
+                } elseif ($sisaHariRounded >= 0) {
+                    $status = StatusExp::HAMPIR_EXP;
                 } else {
-                    $status = StatusExp::EXPIRED->value;
+                    $status = StatusExp::EXPIRED;
                 }
 
-                if ($status === StatusExp::EXPIRED->value) {
+                if ($status === StatusExp::EXPIRED) {
                     $persediaan->delete();
                 } elseif ($persediaan->sisa_hari !== $sisaHariRounded || $persediaan->status_exp !== $status) {
                     $persediaan->update([
@@ -204,9 +204,6 @@ class PersediaanManagement extends Component
 
     public function render()
     {
-        // Otomatis hapus yang expired sebelum menampilkan data
-        $this->hapusPersediaanExpired();
-
         $persediaans = Persediaan::query()
             ->with('produk')
             ->when($this->search, function ($query) {

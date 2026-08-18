@@ -70,14 +70,11 @@
                                 @endif
                             </td>
                             <td>
-                                @php
-                                    $statusEnum = \App\Enums\StatusExp::tryFrom($persediaan->status_exp);
-                                @endphp
-                                @if($statusEnum)
+                                @if($persediaan->status_exp)
                                     <span
-                                        class="badge-modern bg-{{ $statusEnum->color() }}-subtle text-{{ $statusEnum->color() }}">
-                                        <i class="{{ $statusEnum->icon() }}"></i>
-                                        {{ $statusEnum->label() }}
+                                        class="badge-modern bg-{{ $persediaan->status_exp->color() }}-subtle text-{{ $persediaan->status_exp->color() }}">
+                                        <i class="{{ $persediaan->status_exp->icon() }}"></i>
+                                        {{ $persediaan->status_exp->label() }}
                                     </span>
                                 @else
                                     <span class="badge-modern bg-secondary-subtle text-secondary">
