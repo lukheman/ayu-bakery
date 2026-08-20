@@ -238,7 +238,7 @@ class PesananManagement extends Component
 
         if ($pesanan && $pesanan->transaksi) {
             $pesanan->transaksi->update([
-                'status_pembayaran' => StatusPembayaran::LUNAS,
+                'status_pembayaran' => StatusPembayaran::SUDAH_BAYAR,
             ]);
             session()->flash('success', 'Pembayaran berhasil dikonfirmasi (Lunas).');
         }
