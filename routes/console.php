@@ -20,7 +20,7 @@ Schedule::call(function () {
         $sisaHari = $now->diffInDays($tglExp, false);
         $sisaHariRounded = (int) ceil($sisaHari);
 
-        if ($sisaHariRounded > 14) {
+        if ($sisaHariRounded > 3) {
             $status = StatusExp::AMAN->value;
         } elseif ($sisaHariRounded >= 0) {
             $status = StatusExp::HAMPIR_EXP->value;

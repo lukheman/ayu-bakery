@@ -26,7 +26,7 @@ class PersediaanFactory extends Factory
             'tgl_produksi' => $tglProduksi,
             'tgl_exp' => $tglExp,
             'sisa_hari' => max(0, $sisaHari),
-            'status_exp' => $sisaHari > 14 ? StatusExp::AMAN : ($sisaHari > 3 ? StatusExp::HAMPIR_EXP : StatusExp::EXPIRED),
+            'status_exp' => $sisaHari > 3 ? StatusExp::AMAN : ($sisaHari >= 0 ? StatusExp::HAMPIR_EXP : StatusExp::EXPIRED),
         ];
     }
 }

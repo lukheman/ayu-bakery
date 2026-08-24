@@ -87,7 +87,7 @@ class PersediaanManagement extends Component
         $sisaHari = $now->diffInDays($tglExp, false);
         $sisaHariRounded = (int) ceil($sisaHari);
 
-        if ($sisaHariRounded > 14) {
+        if ($sisaHariRounded > 3) {
             $status = StatusExp::AMAN;
         } elseif ($sisaHariRounded >= 0) {
             $status = StatusExp::HAMPIR_EXP;
@@ -182,7 +182,7 @@ class PersediaanManagement extends Component
                 $persediaan->delete();
             } else {
                 // Update status agar selalu real-time
-                if ($sisaHariRounded > 14) {
+                if ($sisaHariRounded > 3) {
                     $status = StatusExp::AMAN;
                 } elseif ($sisaHariRounded >= 0) {
                     $status = StatusExp::HAMPIR_EXP;
