@@ -268,15 +268,12 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                            $statusEnum = $batch->status_exp ? \App\Enums\StatusExp::tryFrom($batch->status_exp) : null;
-                                        @endphp
-                                        @if($statusEnum)
+                                        @if($batch->status_exp)
                                             <span class="badge-modern"
-                                                style="background: rgba({{ $statusEnum->color() === 'success' ? '16,185,129' : ($statusEnum->color() === 'warning' ? '245,158,11' : '239,68,68') }}, 0.12);
-                                                                                       color: var(--{{ $statusEnum->color() }}-color); font-size: 0.72rem;">
-                                                <i class="{{ $statusEnum->icon() }}"></i>
-                                                {{ $statusEnum->label() }}
+                                                style="background: rgba({{ $batch->status_exp->color() === 'success' ? '16,185,129' : ($batch->status_exp->color() === 'warning' ? '245,158,11' : '239,68,68') }}, 0.12);
+                                                                                       color: var(--{{ $batch->status_exp->color() }}-color); font-size: 0.72rem;">
+                                                <i class="{{ $batch->status_exp->icon() }}"></i>
+                                                {{ $batch->status_exp->label() }}
                                             </span>
                                         @else
                                             <span style="color: var(--text-muted);">—</span>

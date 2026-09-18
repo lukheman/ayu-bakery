@@ -212,11 +212,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @php
-                                        $statusEnum = $batch->status_exp ? \App\Enums\StatusExp::tryFrom($batch->status_exp) : null;
-                                    @endphp
-                                    @if($statusEnum)
-                                            {{ $statusEnum->label() }}
+                                    @if($batch->status_exp)
+                                            {{ $batch->status_exp->label() }}
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
