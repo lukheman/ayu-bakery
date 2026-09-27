@@ -35,7 +35,7 @@
 
     {{-- Statistics Cards --}}
     <div class="row g-3 mb-4">
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card" style="--accent-color: var(--primary-color);">
                 <div class="stat-icon" style="background: rgba(99,102,241,0.1); color: var(--primary-color);">
                     <i class="fas fa-box"></i>
@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card" style="--accent-color: #f59e0b;">
                 <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
                     <i class="fas fa-calculator"></i>
@@ -59,7 +59,19 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card" style="--accent-color: #ef4444;">
+                <div class="stat-icon" style="background: rgba(239,68,68,0.1); color: #ef4444;">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary);">
+                    {{ number_format($avgMad, 2) }}
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Rata-rata MAD (Akurasi)
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
             <div class="stat-card" style="--accent-color: var(--success-color);">
                 <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: var(--success-color);">
                     <i class="fas fa-industry"></i>
@@ -88,6 +100,10 @@
                     <strong>MA = (X₁ + X₂ + ... + Xₙ) / N</strong> — di mana <strong>X</strong> = data penjualan per
                     minggu, <strong>N</strong> = jumlah periode. Hasil MA digunakan sebagai prediksi dan rekomendasi
                     produksi untuk periode berikutnya.
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+                    <strong>MAD = (|X₁ − MA| + |X₂ − MA| + ... + |Xₙ − MA|) / N</strong> — mengukur akurasi prediksi.
+                    Semakin kecil nilai MAD, semakin akurat hasil peramalan.
                 </div>
             </div>
         </div>
@@ -147,6 +163,10 @@
                             MA
                         </th>
                         <th
+                            style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(239,68,68,0.05);">
+                            MAD
+                        </th>
+                        <th
                             style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(16,185,129,0.05);">
                             Rekomendasi
                         </th>
@@ -179,6 +199,11 @@
                                     style="font-weight: 700; font-size: 0.9rem; color: var(--primary-color);">{{ number_format($item['ma'], 1) }}</span>
                             </td>
                             <td
+                                style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(239,68,68,0.05);">
+                                <span
+                                    style="font-weight: 700; font-size: 0.9rem; color: #ef4444;">{{ number_format($item['mad'], 2) }}</span>
+                            </td>
+                            <td
                                 style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(16,185,129,0.05);">
                                 <span class="badge-modern"
                                     style="background: rgba(16,185,129,0.12); color: var(--success-color); font-size: 0.8rem; font-weight: 700;">
@@ -188,7 +213,7 @@
                         </tr>
                         {{-- Expandable detail row --}}
                         <tr style="display: none; background: var(--bg-tertiary);">
-                            <td colspan="{{ count($weeks) + 3 }}" style="padding: 0.75rem 1.5rem 1rem;">
+                            <td colspan="{{ count($weeks) + 4 }}" style="padding: 0.75rem 1.5rem 1rem;">
                                 <div
                                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">
                                     <i class="fas fa-calculator me-1"></i> Detail Perhitungan Moving Average
@@ -210,6 +235,12 @@
                                         MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} =
                                         <strong>{{ number_format($item['ma'], 2) }}</strong>
                                     </div>
+                                    <div
+                                        style="font-size: 0.85rem; color: #ef4444; font-weight: 600; padding: 8px 12px; background: rgba(239,68,68,0.06); border-radius: 6px; display: inline-block; margin-left: 8px;">
+                                        MAD = ({{ implode(' + ', array_map(fn($q) => '|' . $q . ' − ' . number_format($item['ma'], 2) . '|', $item['weekly'])) }})
+                                        / {{ $jumlahPeriode }} =
+                                        <strong>{{ number_format($item['mad'], 2) }}</strong>
+                                    </div>
                                     <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
                                         <i class="fas fa-arrow-right me-1"></i> Rekomendasi produksi:
                                         <strong style="color: var(--success-color);">{{ $item['rekomendasi'] }}</strong>
@@ -220,7 +251,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ count($weeks) + 3 }}" style="text-align: center; padding: 3rem 1rem;">
+                            <td colspan="{{ count($weeks) + 4 }}" style="text-align: center; padding: 3rem 1rem;">
                                 <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--text-muted);"></i>
                                 <p class="mt-2" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">Tidak
                                     ada

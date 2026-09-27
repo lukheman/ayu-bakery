@@ -18,6 +18,7 @@ class MovingAverage extends Model
         'id_produk',
         'periode',
         'rata_penjualan',
+        'mad',
         'rekomendasi_produksi',
         'tgl_hitung',
         'created_at',

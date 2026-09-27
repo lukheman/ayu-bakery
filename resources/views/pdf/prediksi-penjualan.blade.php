@@ -113,6 +113,16 @@
             background: #ddd;
         }
 
+        table.main td.mad {
+            background: #f3e2e2;
+            font-weight: 700;
+            color: #111;
+        }
+
+        table.main th.th-mad {
+            background: #e8c9c9;
+        }
+
         table.main th.th-rek {
             background: #ccc;
         }
@@ -150,6 +160,9 @@
         <strong>Rumus:</strong> MA = (X₁ + X₂ + ... + Xₙ) / N &nbsp;&mdash;&nbsp;
         X = qty penjualan per minggu, N = {{ $jumlahPeriode }} periode.
         Hasil MA = prediksi penjualan minggu berikutnya. Rekomendasi produksi = pembulatan ke atas dari MA.
+        <br>
+        <strong>Akurasi:</strong> MAD = (|X₁ − MA| + |X₂ − MA| + ... + |Xₙ − MA|) / N &nbsp;&mdash;&nbsp;
+        semakin kecil nilai MAD, semakin akurat hasil peramalan.
     </div>
 
     {{-- Table --}}
@@ -162,6 +175,7 @@
                     </th>
                 @endforeach
                 <th class="th-ma">MA</th>
+                <th class="th-mad">MAD</th>
                 <th class="th-rek">Rekomendasi</th>
             </tr>
         </thead>
@@ -179,11 +193,12 @@
                         <td>{{ $qty }}</td>
                     @endforeach
                     <td class="ma">{{ number_format($item['ma'], 1) }}</td>
+                    <td class="mad">{{ number_format($item['mad'], 2) }}</td>
                     <td class="rekomendasi">{{ $item['rekomendasi'] }} {{ $item['produk']->unit ?? 'pcs' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($weeks) + 3 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
+                    <td colspan="{{ count($weeks) + 4 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
                         Tidak ada data produk.
                     </td>
                 </tr>
@@ -200,6 +215,8 @@
                     <strong>{{ $item['produk']->nama_produk }}:</strong>
                     MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} = <strong
                         style="color: #111;">{{ number_format($item['ma'], 2) }}</strong>
+                    &nbsp;|&nbsp; MAD = <strong
+                        style="color: #111;">{{ number_format($item['mad'], 2) }}</strong>
                     → Rekomendasi: <strong style="color: #111;">{{ $item['rekomendasi'] }}</strong>
                     {{ $item['produk']->unit ?? 'pcs' }}
                 </div>

@@ -3,6 +3,7 @@
 namespace App\Livewire\PemilikToko;
 
 use App\Enums\StatusPesanan;
+use App\Imports\PenjualanImport;
 use App\Models\ItemPenjualan;
 use App\Models\ItemPesanan;
 use App\Models\MovingAverage;
@@ -15,7 +16,6 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\PenjualanImport;
 
 #[Title('Prediksi Penjualan (Moving Average) - Ayu Bakery')]
 #[Layout('layouts.app')]
@@ -24,9 +24,11 @@ class PrediksiPenjualan extends Component
     use WithFileUploads;
 
     public int $jumlahPeriode = 4;
+
     public string $search = '';
 
     public $fileExcel;
+
     public bool $showImportModal = false;
 
     public function updatedJumlahPeriode(): void
@@ -55,9 +57,9 @@ class PrediksiPenjualan extends Component
         $produks = Produk::query()
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
-                    $query->where('nama_produk', 'like', '%' . $this->search . '%')
-                        ->orWhere('kode_produk', 'like', '%' . $this->search . '%')
-                        ->orWhere('varian_rasa', 'like', '%' . $this->search . '%');
+                    $query->where('nama_produk', 'like', '%'.$this->search.'%')
+                        ->orWhere('kode_produk', 'like', '%'.$this->search.'%')
+                        ->orWhere('varian_rasa', 'like', '%'.$this->search.'%');
                 });
             })
             ->orderBy('nama_produk')
@@ -88,10 +90,10 @@ class PrediksiPenjualan extends Component
         $currentWeek = $startDate->copy();
         for ($i = 0; $i < $n; $i++) {
             $yearWeek = $currentWeek->format('oW'); // ISO year + week number
-            $yearWeekNum = intval($currentWeek->isoFormat('GGGG') . str_pad($currentWeek->isoFormat('WW'), 2, '0', STR_PAD_LEFT));
+            $yearWeekNum = intval($currentWeek->isoFormat('GGGG').str_pad($currentWeek->isoFormat('WW'), 2, '0', STR_PAD_LEFT));
             $weeks[] = [
-                'label' => 'Mg ' . ($i + 1),
-                'range' => $currentWeek->format('d/m') . ' - ' . $currentWeek->copy()->endOfWeek()->format('d/m'),
+                'label' => 'Mg '.($i + 1),
+                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
                 'yearweek' => $yearWeekNum,
             ];
             $currentWeek->addWeek();
@@ -130,11 +132,21 @@ class PrediksiPenjualan extends Component
             $ma = $n > 0 ? round($totalQty / $n, 2) : 0;
             $rekomendasiProduksi = (int) ceil($ma);
 
+            // MAD (Mean Absolute Deviation): rata-rata selisih absolut
+            // penjualan aktual tiap minggu terhadap nilai MA (sebagai prediksi).
+            // Semakin kecil MAD, semakin akurat prediksi.
+            $totalDeviasi = 0;
+            foreach ($weeklyData as $qty) {
+                $totalDeviasi += abs($qty - $ma);
+            }
+            $mad = $n > 0 ? round($totalDeviasi / $n, 2) : 0;
+
             $results->push([
                 'produk' => $produk,
                 'weekly' => $weeklyData,
                 'total' => $totalQty,
                 'ma' => $ma,
+                'mad' => $mad,
                 'rekomendasi' => $rekomendasiProduksi,
             ]);
         }
@@ -155,6 +167,7 @@ class PrediksiPenjualan extends Component
                 ],
                 [
                     'rata_penjualan' => $item['ma'],
+                    'mad' => $item['mad'],
                     'rekomendasi_produksi' => $item['rekomendasi'],
                     'created_at' => now(),
                 ]
@@ -177,8 +190,8 @@ class PrediksiPenjualan extends Component
         $currentWeek = $startDate->copy();
         for ($i = 0; $i < $n; $i++) {
             $weeks[] = [
-                'label' => 'Mg ' . ($i + 1),
-                'range' => $currentWeek->format('d/m') . ' - ' . $currentWeek->copy()->endOfWeek()->format('d/m'),
+                'label' => 'Mg '.($i + 1),
+                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
             ];
             $currentWeek->addWeek();
         }
@@ -193,7 +206,7 @@ class PrediksiPenjualan extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'prediksi-penjualan-ma-' . now()->format('Y-m-d') . '.pdf');
+        }, 'prediksi-penjualan-ma-'.now()->format('Y-m-d').'.pdf');
     }
 
     public function closeImportModal()
@@ -213,7 +226,7 @@ class PrediksiPenjualan extends Component
             session()->flash('message', 'Data penjualan berhasil diimport.');
             $this->closeImportModal();
         } catch (\Exception $e) {
-            session()->flash('message', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+            session()->flash('message', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 
@@ -230,8 +243,8 @@ class PrediksiPenjualan extends Component
         $currentWeek = $startDate->copy();
         for ($i = 0; $i < $n; $i++) {
             $weeks[] = [
-                'label' => 'Mg ' . ($i + 1),
-                'range' => $currentWeek->format('d/m') . ' - ' . $currentWeek->copy()->endOfWeek()->format('d/m'),
+                'label' => 'Mg '.($i + 1),
+                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
             ];
             $currentWeek->addWeek();
         }
@@ -239,6 +252,7 @@ class PrediksiPenjualan extends Component
         // Stats
         $totalProduk = $data->count();
         $avgPrediksi = $data->count() > 0 ? round($data->avg('ma'), 2) : 0;
+        $avgMad = $data->count() > 0 ? round($data->avg('mad'), 2) : 0;
         $totalRekomendasi = $data->sum('rekomendasi');
 
         return view('livewire.pemilik-toko.prediksi-penjualan', [
@@ -246,6 +260,7 @@ class PrediksiPenjualan extends Component
             'weeks' => $weeks,
             'totalProduk' => $totalProduk,
             'avgPrediksi' => $avgPrediksi,
+            'avgMad' => $avgMad,
             'totalRekomendasi' => $totalRekomendasi,
         ]);
     }
