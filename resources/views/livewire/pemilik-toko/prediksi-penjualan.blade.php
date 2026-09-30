@@ -276,13 +276,23 @@
                 </div>
                 <form wire:submit="importExcel">
                     <div class="mb-4">
-                        <label class="form-label" style="font-weight: 600; color: var(--text-primary);">Pilih File Excel / CSV</label>
-                        <input type="file" class="form-control" 
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0" style="font-weight: 600; color: var(--text-primary);">Pilih File Excel / CSV</label>
+                            <button type="button" class="btn btn-sm"
+                                style="background: rgba(99,102,241,0.1); color: var(--primary-color); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; font-weight: 600; font-size: 0.8rem;"
+                                wire:click="downloadTemplate">
+                                <i class="fas fa-download me-1"></i> Unduh Template
+                            </button>
+                        </div>
+                        <input type="file" class="form-control"
                                wire:model="fileExcel" accept=".xlsx,.xls,.csv" required
                                style="background: var(--input-bg); border-color: var(--border-color); padding: 0.5rem;">
-                        
+
                         <div class="form-text mt-2" style="font-size: 0.8rem; color: var(--text-muted);">
-                            Pastikan format kolom (baris pertama) sesuai: <strong>Tanggal, Nomor Struk, Kasir, Metode Pembayaran, Nama Produk, Harga, Jumlah, Subtotal</strong>.
+                            Format kolom (baris pertama): <strong>Tanggal, Nomor Struk, Kasir, Metode Pembayaran,
+                                Nama Produk, Harga, Jumlah, Subtotal</strong> — satu baris per produk.
+                            Kolom <strong>Jumlah</strong> diisi manual, <strong>Subtotal</strong> dihitung otomatis
+                            (Harga × Jumlah). Unduh template untuk contoh yang sudah sesuai.
                         </div>
                         <div class="form-text mt-2" style="font-size: 0.8rem; color: #f59e0b;">
                             <i class="fas fa-info-circle me-1"></i> Produk yang belum ada di database akan ditambahkan secara otomatis berdasarkan <strong>Nama Produk</strong>.

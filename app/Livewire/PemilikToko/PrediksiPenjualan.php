@@ -3,6 +3,7 @@
 namespace App\Livewire\PemilikToko;
 
 use App\Enums\StatusPesanan;
+use App\Exports\PenjualanTemplateExport;
 use App\Imports\PenjualanImport;
 use App\Models\ItemPenjualan;
 use App\Models\ItemPesanan;
@@ -213,6 +214,11 @@ class PrediksiPenjualan extends Component
     {
         $this->showImportModal = false;
         $this->reset('fileExcel');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new PenjualanTemplateExport, 'template-import-penjualan.xlsx');
     }
 
     public function importExcel()
