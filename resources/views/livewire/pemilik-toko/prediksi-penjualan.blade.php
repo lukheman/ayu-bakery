@@ -139,6 +139,92 @@
         </div>
     </div>
 
+    {{-- Grafik Prediksi --}}
+    <div class="modern-card mb-4" style="padding: 1.25rem;">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h5 class="mb-0" style="color: var(--text-primary); font-weight: 600;">
+                <i class="fas fa-chart-bar me-2" style="color: var(--primary-color);"></i>Grafik Prediksi Penjualan
+            </h5>
+            <select class="form-select" style="max-width: 280px;" wire:model.live="chartProdukId">
+                <option value="">Semua Produk</option>
+                @foreach ($data as $item)
+                    <option value="{{ $item['produk']->id }}">{{ $item['produk']->nama_produk }}{{ $item['produk']->varian_rasa ? ' - '.$item['produk']->varian_rasa : '' }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div wire:ignore>
+            <div style="position: relative; height: 320px;">
+                <canvas id="grafikPrediksi"></canvas>
+            </div>
+        </div>
+        <script type="application/json" id="grafikPrediksiData">@json($chartData)</script>
+    </div>
+
+    <script src="{{ asset('assets/chartjs/chart.umd.min.js') }}"></script>
+    <script>
+        (function () {
+            function buildAllConfig(payload) {
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: payload.labels,
+                        datasets: [
+                            { label: 'Total aktual', data: payload.total, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
+                            { label: 'MA (prediksi)', data: payload.ma, backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 6 },
+                            { label: 'Rekomendasi', data: payload.rekomendasi, backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6 },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Qty' } },
+                            x: { ticks: { maxRotation: 45 } },
+                        },
+                    },
+                };
+            }
+
+            function buildDetailConfig(payload) {
+                return {
+                    data: {
+                        labels: payload.labels,
+                        datasets: [
+                            { type: 'bar', label: 'Aktual (' + payload.unit + ')', data: payload.aktual, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
+                            { type: 'line', label: 'MA / Prediksi (' + payload.maValue + ')', data: payload.ma, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Qty (' + payload.unit + ')' } } },
+                        plugins: { title: { display: true, text: payload.title } },
+                    },
+                };
+            }
+
+            function renderPrediksiChart() {
+                var el = document.getElementById('grafikPrediksi');
+                var dataEl = document.getElementById('grafikPrediksiData');
+                if (!el || !dataEl || typeof Chart === 'undefined') return;
+                var payload;
+                try {
+                    payload = JSON.parse(dataEl.textContent);
+                } catch (e) {
+                    return;
+                }
+                if (window.grafikPrediksi) window.grafikPrediksi.destroy();
+                window.grafikPrediksi = new Chart(el, payload.mode === 'detail' ? buildDetailConfig(payload) : buildAllConfig(payload));
+            }
+
+            renderPrediksiChart();
+            if (window.Livewire && !window._prediksiChartHookRegistered) {
+                window._prediksiChartHookRegistered = true;
+                Livewire.hook('morph.updated', function () { renderPrediksiChart(); });
+            }
+        })();
+    </script>
+
     {{-- Results Table --}}
     <div class="modern-card" style="padding: 0; overflow: hidden;">
         <div style="overflow-x: auto;">

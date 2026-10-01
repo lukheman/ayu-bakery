@@ -32,6 +32,8 @@ class PrediksiPenjualan extends Component
 
     public bool $showImportModal = false;
 
+    public $chartProdukId = null;
+
     public function updatedJumlahPeriode(): void
     {
         if ($this->jumlahPeriode < 2) {
@@ -155,6 +157,40 @@ class PrediksiPenjualan extends Component
         return $results;
     }
 
+    /**
+     * Susun payload grafik: mode 'all' (perbandingan MA semua produk)
+     * atau mode 'detail' (tren mingguan + garis MA satu produk).
+     */
+    private function buildChartData(Collection $data, array $weeks): array
+    {
+        $selectedId = $this->chartProdukId ? (int) $this->chartProdukId : null;
+        $item = $selectedId ? $data->firstWhere(fn ($i) => $i['produk']->id === $selectedId) : null;
+
+        if ($item) {
+            $labels = array_map(fn ($w) => $w['label'], $weeks);
+            $labels[] = 'Prediksi';
+            $weekly = array_values($item['weekly']);
+
+            return [
+                'mode' => 'detail',
+                'title' => $item['produk']->nama_produk,
+                'unit' => $item['produk']->unit ?? 'pcs',
+                'labels' => $labels,
+                'aktual' => array_merge($weekly, [null]),
+                'ma' => array_fill(0, count($labels), $item['ma']),
+                'maValue' => $item['ma'],
+            ];
+        }
+
+        return [
+            'mode' => 'all',
+            'labels' => $data->map(fn ($i) => $i['produk']->nama_produk)->values()->all(),
+            'total' => $data->map(fn ($i) => $i['total'])->values()->all(),
+            'ma' => $data->map(fn ($i) => $i['ma'])->values()->all(),
+            'rekomendasi' => $data->map(fn ($i) => $i['rekomendasi'])->values()->all(),
+        ];
+    }
+
     public function simpanPrediksi()
     {
         $data = $this->hitungDataMingguan();
@@ -268,6 +304,7 @@ class PrediksiPenjualan extends Component
             'avgPrediksi' => $avgPrediksi,
             'avgMad' => $avgMad,
             'totalRekomendasi' => $totalRekomendasi,
+            'chartData' => $this->buildChartData($data, $weeks),
         ]);
     }
 }
