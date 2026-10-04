@@ -6,7 +6,7 @@
                 <i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>Prediksi Penjualan
             </h4>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
-                Peramalan penjualan menggunakan metode Moving Average
+                Peramalan penjualan menggunakan metode Weighted Moving Average
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
@@ -55,7 +55,7 @@
                 <div style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary);">
                     {{ number_format($avgPrediksi, 1) }}
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Rata-rata Prediksi (MA)
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Rata-rata Prediksi (WMA)
                 </div>
             </div>
         </div>
@@ -95,15 +95,18 @@
             </div>
             <div>
                 <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 4px;">
-                    Rumus Moving Average</div>
+                    Rumus Weighted Moving Average</div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                    <strong>MA = (X₁ + X₂ + ... + Xₙ) / N</strong> — di mana <strong>X</strong> = data penjualan per
-                    minggu, <strong>N</strong> = jumlah periode. Hasil MA digunakan sebagai prediksi dan rekomendasi
+                    <strong>WMA = (1·X₁ + 2·X₂ + ... + N·Xₙ) / (1 + 2 + ... + N)</strong> — di mana
+                    <strong>X</strong> = data penjualan per minggu, <strong>N</strong> = jumlah periode. Minggu terbaru
+                    diberi bobot terbesar. Hasil WMA digunakan sebagai prediksi dan rekomendasi
                     produksi untuk periode berikutnya.
                 </div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
-                    <strong>MAD = (|X₁ − MA| + |X₂ − MA| + ... + |Xₙ − MA|) / N</strong> — mengukur akurasi prediksi.
-                    Semakin kecil nilai MAD, semakin akurat hasil peramalan.
+                    <strong>MAD = Σ|X − WMA| / N</strong> ·
+                    <strong>MSE = Σ(X − WMA)² / N</strong> ·
+                    <strong>MAPE = Σ(|X − WMA| / X × 100%) / N</strong> — mengukur akurasi prediksi.
+                    Semakin kecil nilainya, semakin akurat hasil peramalan.
                 </div>
             </div>
         </div>
@@ -170,7 +173,7 @@
                         labels: payload.labels,
                         datasets: [
                             { label: 'Total aktual', data: payload.total, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
-                            { label: 'MA (prediksi)', data: payload.ma, backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 6 },
+                            { label: 'WMA (prediksi)', data: payload.wma, backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 6 },
                             { label: 'Rekomendasi', data: payload.rekomendasi, backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6 },
                         ],
                     },
@@ -191,7 +194,7 @@
                         labels: payload.labels,
                         datasets: [
                             { type: 'bar', label: 'Aktual (' + payload.unit + ')', data: payload.aktual, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
-                            { type: 'line', label: 'MA / Prediksi (' + payload.maValue + ')', data: payload.ma, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
+                            { type: 'line', label: 'WMA / Prediksi (' + payload.wmaValue + ')', data: payload.wma, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
                         ],
                     },
                     options: {
@@ -246,11 +249,19 @@
                         @endforeach
                         <th
                             style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(99,102,241,0.05);">
-                            MA
+                            WMA
                         </th>
                         <th
                             style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(239,68,68,0.05);">
                             MAD
+                        </th>
+                        <th
+                            style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(245,158,11,0.05);">
+                            MSE
+                        </th>
+                        <th
+                            style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(245,158,11,0.05);">
+                            MAPE
                         </th>
                         <th
                             style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: center; white-space: nowrap; background: rgba(16,185,129,0.05);">
@@ -282,12 +293,22 @@
                             <td
                                 style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(99,102,241,0.05);">
                                 <span
-                                    style="font-weight: 700; font-size: 0.9rem; color: var(--primary-color);">{{ number_format($item['ma'], 1) }}</span>
+                                    style="font-weight: 700; font-size: 0.9rem; color: var(--primary-color);">{{ number_format($item['wma'], 1) }}</span>
                             </td>
                             <td
                                 style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(239,68,68,0.05);">
                                 <span
                                     style="font-weight: 700; font-size: 0.9rem; color: #ef4444;">{{ number_format($item['mad'], 2) }}</span>
+                            </td>
+                            <td
+                                style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(245,158,11,0.05);">
+                                <span
+                                    style="font-weight: 700; font-size: 0.9rem; color: #f59e0b;">{{ number_format($item['mse'], 2) }}</span>
+                            </td>
+                            <td
+                                style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(245,158,11,0.05);">
+                                <span
+                                    style="font-weight: 700; font-size: 0.9rem; color: #f59e0b;">{{ number_format($item['mape'], 2) }}%</span>
                             </td>
                             <td
                                 style="padding: 0.85rem 0.75rem; text-align: center; vertical-align: middle; background: rgba(16,185,129,0.05);">
@@ -299,10 +320,10 @@
                         </tr>
                         {{-- Expandable detail row --}}
                         <tr style="display: none; background: var(--bg-tertiary);">
-                            <td colspan="{{ count($weeks) + 4 }}" style="padding: 0.75rem 1.5rem 1rem;">
+                            <td colspan="{{ count($weeks) + 6 }}" style="padding: 0.75rem 1.5rem 1rem;">
                                 <div
                                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">
-                                    <i class="fas fa-calculator me-1"></i> Detail Perhitungan Moving Average
+                                    <i class="fas fa-calculator me-1"></i> Detail Perhitungan Weighted Moving Average
                                 </div>
                                 <div
                                     style="background: var(--bg-secondary); border-radius: 8px; padding: 1rem; border: 1px solid var(--border-color);">
@@ -316,28 +337,51 @@
                                             {{ $item['produk']->unit ?? 'pcs' }}{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </div>
+                                    @php
+                                        $wmaTerms = [];
+                                        $wmaBobot = 0;
+                                        foreach ($item['weekly'] as $idx => $qty) {
+                                            $b = $idx + 1;
+                                            $wmaTerms[] = $b.'·'.$qty;
+                                            $wmaBobot += $b;
+                                        }
+                                        $wmaFmt = number_format($item['wma'], 2);
+                                    @endphp
                                     <div
                                         style="font-size: 0.85rem; color: var(--primary-color); font-weight: 600; padding: 8px 12px; background: rgba(99,102,241,0.06); border-radius: 6px; display: inline-block;">
-                                        MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} =
-                                        <strong>{{ number_format($item['ma'], 2) }}</strong>
+                                        WMA = ({{ implode(' + ', $wmaTerms) }}) / {{ $wmaBobot }} =
+                                        <strong>{{ $wmaFmt }}</strong>
                                     </div>
                                     <div
                                         style="font-size: 0.85rem; color: #ef4444; font-weight: 600; padding: 8px 12px; background: rgba(239,68,68,0.06); border-radius: 6px; display: inline-block; margin-left: 8px;">
-                                        MAD = ({{ implode(' + ', array_map(fn($q) => '|' . $q . ' − ' . number_format($item['ma'], 2) . '|', $item['weekly'])) }})
+                                        MAD = ({{ implode(' + ', array_map(fn($q) => '|'.$q.' − '.$wmaFmt.'|', $item['weekly'])) }})
                                         / {{ $jumlahPeriode }} =
                                         <strong>{{ number_format($item['mad'], 2) }}</strong>
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                        <div
+                                            style="font-size: 0.85rem; color: #f59e0b; font-weight: 600; padding: 8px 12px; background: rgba(245,158,11,0.06); border-radius: 6px; display: inline-block;">
+                                            MSE = ({{ implode(' + ', array_map(fn($q) => '|'.$q.' − '.$wmaFmt.'|²', $item['weekly'])) }})
+                                            / {{ $jumlahPeriode }} =
+                                            <strong>{{ number_format($item['mse'], 2) }}</strong>
+                                        </div>
+                                        <div
+                                            style="font-size: 0.85rem; color: #f59e0b; font-weight: 600; padding: 8px 12px; background: rgba(245,158,11,0.06); border-radius: 6px; display: inline-block;">
+                                            MAPE = <strong>{{ number_format($item['mape'], 2) }}%</strong>
+                                            <span style="font-weight: 400; font-size: 0.78rem;">(rata-rata error relatif thd aktual; minggu dgn penjualan 0 dilewati)</span>
+                                        </div>
                                     </div>
                                     <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
                                         <i class="fas fa-arrow-right me-1"></i> Rekomendasi produksi:
                                         <strong style="color: var(--success-color);">{{ $item['rekomendasi'] }}</strong>
-                                        {{ $item['produk']->unit ?? 'pcs' }} (pembulatan ke atas dari MA)
+                                        {{ $item['produk']->unit ?? 'pcs' }} (pembulatan ke atas dari WMA)
                                     </div>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ count($weeks) + 4 }}" style="text-align: center; padding: 3rem 1rem;">
+                            <td colspan="{{ count($weeks) + 6 }}" style="text-align: center; padding: 3rem 1rem;">
                                 <i class="fas fa-chart-line" style="font-size: 2.5rem; color: var(--text-muted);"></i>
                                 <p class="mt-2" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">Tidak
                                     ada

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Prediksi Penjualan (Moving Average) - Ayu Bakery</title>
+    <title>Prediksi Penjualan (Weighted Moving Average) - Ayu Bakery</title>
     <style>
         @@page { size: A4; margin: 2cm; }
         * {
@@ -113,6 +113,16 @@
             background: #ddd;
         }
 
+        table.main td.mse {
+            background: #fdf3e3;
+            font-weight: 700;
+            color: #111;
+        }
+
+        table.main th.th-mse {
+            background: #f5e3c2;
+        }
+
         table.main td.mad {
             background: #f3e2e2;
             font-weight: 700;
@@ -145,7 +155,7 @@
     {{-- Header --}}
     <div class="header">
         <h1>🎂 Ayu Bakery</h1>
-        <h2>Prediksi Penjualan — Metode Moving Average</h2>
+        <h2>Prediksi Penjualan — Metode Weighted Moving Average</h2>
         <div class="date">Dicetak pada: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 
@@ -157,12 +167,14 @@
 
     {{-- Formula --}}
     <div class="formula-box">
-        <strong>Rumus:</strong> MA = (X₁ + X₂ + ... + Xₙ) / N &nbsp;&mdash;&nbsp;
-        X = qty penjualan per minggu, N = {{ $jumlahPeriode }} periode.
-        Hasil MA = prediksi penjualan minggu berikutnya. Rekomendasi produksi = pembulatan ke atas dari MA.
+        <strong>Rumus:</strong> WMA = (1·X₁ + 2·X₂ + ... + N·Xₙ) / (1 + 2 + ... + N) &nbsp;&mdash;&nbsp;
+        X = qty penjualan per minggu, N = {{ $jumlahPeriode }} periode (minggu terbaru bobot terbesar).
+        Hasil WMA = prediksi penjualan minggu berikutnya. Rekomendasi produksi = pembulatan ke atas dari WMA.
         <br>
-        <strong>Akurasi:</strong> MAD = (|X₁ − MA| + |X₂ − MA| + ... + |Xₙ − MA|) / N &nbsp;&mdash;&nbsp;
-        semakin kecil nilai MAD, semakin akurat hasil peramalan.
+        <strong>Akurasi:</strong> MAD = Σ|X − WMA| / N &nbsp;·&nbsp;
+        MSE = Σ(X − WMA)² / N &nbsp;·&nbsp;
+        MAPE = Σ(|X − WMA| / X × 100%) / N &nbsp;&mdash;&nbsp;
+        semakin kecil nilainya, semakin akurat hasil peramalan.
     </div>
 
     {{-- Table --}}
@@ -174,8 +186,10 @@
                     <th>{{ $week['label'] }}<br><span style="font-weight: 400; font-size: 7px;">{{ $week['range'] }}</span>
                     </th>
                 @endforeach
-                <th class="th-ma">MA</th>
+                <th class="th-ma">WMA</th>
                 <th class="th-mad">MAD</th>
+                <th class="th-mse">MSE</th>
+                <th class="th-mse">MAPE</th>
                 <th class="th-rek">Rekomendasi</th>
             </tr>
         </thead>
@@ -192,13 +206,15 @@
                     @foreach($item['weekly'] as $qty)
                         <td>{{ $qty }}</td>
                     @endforeach
-                    <td class="ma">{{ number_format($item['ma'], 1) }}</td>
+                    <td class="ma">{{ number_format($item['wma'], 1) }}</td>
                     <td class="mad">{{ number_format($item['mad'], 2) }}</td>
+                    <td class="mse">{{ number_format($item['mse'], 2) }}</td>
+                    <td class="mse">{{ number_format($item['mape'], 2) }}%</td>
                     <td class="rekomendasi">{{ $item['rekomendasi'] }} {{ $item['produk']->unit ?? 'pcs' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($weeks) + 4 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
+                    <td colspan="{{ count($weeks) + 6 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
                         Tidak ada data produk.
                     </td>
                 </tr>
@@ -213,10 +229,14 @@
             @foreach($data as $item)
                 <div style="margin-top: 4px;">
                     <strong>{{ $item['produk']->nama_produk }}:</strong>
-                    MA = ({{ implode(' + ', $item['weekly']) }}) / {{ $jumlahPeriode }} = <strong
-                        style="color: #111;">{{ number_format($item['ma'], 2) }}</strong>
+                    WMA = <strong
+                        style="color: #111;">{{ number_format($item['wma'], 2) }}</strong>
                     &nbsp;|&nbsp; MAD = <strong
                         style="color: #111;">{{ number_format($item['mad'], 2) }}</strong>
+                    &nbsp;|&nbsp; MSE = <strong
+                        style="color: #111;">{{ number_format($item['mse'], 2) }}</strong>
+                    &nbsp;|&nbsp; MAPE = <strong
+                        style="color: #111;">{{ number_format($item['mape'], 2) }}%</strong>
                     → Rekomendasi: <strong style="color: #111;">{{ $item['rekomendasi'] }}</strong>
                     {{ $item['produk']->unit ?? 'pcs' }}
                 </div>
@@ -226,7 +246,7 @@
 
     {{-- Footer --}}
     <div class="footer">
-        Laporan prediksi ini digenerate secara otomatis oleh sistem Ayu Bakery menggunakan metode Moving Average.
+        Laporan prediksi ini digenerate secara otomatis oleh sistem Ayu Bakery menggunakan metode Weighted Moving Average.
         Hasil prediksi bersifat peramalan dan dapat berbeda dengan penjualan aktual.
     </div>
 </body>

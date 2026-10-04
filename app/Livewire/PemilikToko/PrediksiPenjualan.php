@@ -18,7 +18,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 
-#[Title('Prediksi Penjualan (Moving Average) - Ayu Bakery')]
+#[Title('Prediksi Penjualan (Weighted Moving Average) - Ayu Bakery')]
 #[Layout('layouts.app')]
 class PrediksiPenjualan extends Component
 {
@@ -132,24 +132,47 @@ class PrediksiPenjualan extends Component
                 $totalQty += $qty;
             }
 
-            $ma = $n > 0 ? round($totalQty / $n, 2) : 0;
-            $rekomendasiProduksi = (int) ceil($ma);
+            // WMA (Weighted Moving Average): minggu terbaru diberi bobot terbesar.
+            // Bobot linear 1..N (X1 tertua bobot 1, XN terbaru bobot N).
+            $totalBobot = 0;
+            $totalBerbobot = 0;
+            foreach ($weeklyData as $i => $qty) {
+                $bobot = $i + 1;
+                $totalBobot += $bobot;
+                $totalBerbobot += $bobot * $qty;
+            }
+            $wma = $totalBobot > 0 ? round($totalBerbobot / $totalBobot, 2) : 0;
+            $rekomendasiProduksi = (int) ceil($wma);
 
-            // MAD (Mean Absolute Deviation): rata-rata selisih absolut
-            // penjualan aktual tiap minggu terhadap nilai MA (sebagai prediksi).
-            // Semakin kecil MAD, semakin akurat prediksi.
+            // Metrik akurasi memakai WMA sebagai nilai prediksi (F):
+            // MAD  = rata-rata |X - F| (semakin kecil semakin akurat)
+            // MSE  = rata-rata (X - F)^2 (menghukum error besar)
+            // MAPE = rata-rata |X - F| / X * 100% (X = 0 dilewati agar tidak bagi nol)
             $totalDeviasi = 0;
+            $totalKuadrat = 0;
+            $totalPersen = 0;
+            $jumlahPersen = 0;
             foreach ($weeklyData as $qty) {
-                $totalDeviasi += abs($qty - $ma);
+                $selisih = abs($qty - $wma);
+                $totalDeviasi += $selisih;
+                $totalKuadrat += $selisih ** 2;
+                if ($qty != 0) {
+                    $totalPersen += ($selisih / $qty) * 100;
+                    $jumlahPersen++;
+                }
             }
             $mad = $n > 0 ? round($totalDeviasi / $n, 2) : 0;
+            $mse = $n > 0 ? round($totalKuadrat / $n, 2) : 0;
+            $mape = $jumlahPersen > 0 ? round($totalPersen / $jumlahPersen, 2) : 0;
 
             $results->push([
                 'produk' => $produk,
                 'weekly' => $weeklyData,
                 'total' => $totalQty,
-                'ma' => $ma,
+                'wma' => $wma,
                 'mad' => $mad,
+                'mse' => $mse,
+                'mape' => $mape,
                 'rekomendasi' => $rekomendasiProduksi,
             ]);
         }
@@ -177,8 +200,8 @@ class PrediksiPenjualan extends Component
                 'unit' => $item['produk']->unit ?? 'pcs',
                 'labels' => $labels,
                 'aktual' => array_merge($weekly, [null]),
-                'ma' => array_fill(0, count($labels), $item['ma']),
-                'maValue' => $item['ma'],
+                'wma' => array_fill(0, count($labels), $item['wma']),
+                'wmaValue' => $item['wma'],
             ];
         }
 
@@ -186,7 +209,7 @@ class PrediksiPenjualan extends Component
             'mode' => 'all',
             'labels' => $data->map(fn ($i) => $i['produk']->nama_produk)->values()->all(),
             'total' => $data->map(fn ($i) => $i['total'])->values()->all(),
-            'ma' => $data->map(fn ($i) => $i['ma'])->values()->all(),
+            'wma' => $data->map(fn ($i) => $i['wma'])->values()->all(),
             'rekomendasi' => $data->map(fn ($i) => $i['rekomendasi'])->values()->all(),
         ];
     }
@@ -203,8 +226,10 @@ class PrediksiPenjualan extends Component
                     'tgl_hitung' => now()->format('Y-m-d'),
                 ],
                 [
-                    'rata_penjualan' => $item['ma'],
+                    'rata_penjualan' => $item['wma'],
                     'mad' => $item['mad'],
+                    'mse' => $item['mse'],
+                    'mape' => $item['mape'],
                     'rekomendasi_produksi' => $item['rekomendasi'],
                     'created_at' => now(),
                 ]
@@ -243,7 +268,7 @@ class PrediksiPenjualan extends Component
 
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
-        }, 'prediksi-penjualan-ma-'.now()->format('Y-m-d').'.pdf');
+        }, 'prediksi-penjualan-wma-'.now()->format('Y-m-d').'.pdf');
     }
 
     public function closeImportModal()
@@ -293,7 +318,7 @@ class PrediksiPenjualan extends Component
 
         // Stats
         $totalProduk = $data->count();
-        $avgPrediksi = $data->count() > 0 ? round($data->avg('ma'), 2) : 0;
+        $avgPrediksi = $data->count() > 0 ? round($data->avg('wma'), 2) : 0;
         $avgMad = $data->count() > 0 ? round($data->avg('mad'), 2) : 0;
         $totalRekomendasi = $data->sum('rekomendasi');
 
