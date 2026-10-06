@@ -105,7 +105,13 @@ class PenjualanImport implements ToCollection, WithHeadingRow
 
     private function importFormatLebar(Collection $rows): void
     {
-        // Get a default kasir id
+        // Format lebar (wide) seperti template rekap harian:
+        // Tanggal | Produksi {P1} | Terjual {P1} | ... | Sisa Hari Sebelumnya | Total Terjual | Sisa Akhir
+        //
+        // - Kolom "Terjual *" = jumlah terjual -> diimport sebagai penjualan.
+        // - Kolom "Produksi *", "Sisa *", "Total *" = info rekap -> diabaikan.
+        // - Kompatibilitas mundur: file lama yang hanya punya "Produksi *"
+        //   (tanpa "Terjual *") tetap dibaca sebagai jumlah terjual.
         $kasir = Kasir::first();
         $idKasir = $kasir ? $kasir->id : null;
 
@@ -116,6 +122,23 @@ class PenjualanImport implements ToCollection, WithHeadingRow
             }
 
             $tanggal = $this->parseTanggal($tanggalRaw);
+
+            // Kumpulkan kolom terjual_* dulu, fallback ke produksi_* bila tidak ada.
+            $kolomTerjual = [];
+            $kolomProduksi = [];
+            foreach ($row as $key => $value) {
+                if (! is_string($key)) {
+                    continue;
+                }
+                if (str_starts_with($key, 'terjual_')) {
+                    $kolomTerjual[$key] = $value;
+                } elseif (str_starts_with($key, 'produksi_')) {
+                    $kolomProduksi[$key] = $value;
+                }
+            }
+
+            $kolomDipakai = ! empty($kolomTerjual) ? $kolomTerjual : $kolomProduksi;
+            $prefix = ! empty($kolomTerjual) ? 'terjual_' : 'produksi_';
 
             // Create a unique struk number for this date and import
             $nomorStruk = 'IMP-'.$tanggal->format('Ymd').'-'.strtoupper(substr(md5(time().rand()), 0, 4));
@@ -132,10 +155,11 @@ class PenjualanImport implements ToCollection, WithHeadingRow
 
             $totalPenjualan = 0;
 
-            // Iterate over all columns in the row
-            foreach ($row as $key => $value) {
-                // Skip the date column or empty values
-                if ($key === 'tanggal' || empty($value) || ! is_numeric($value)) {
+            foreach ($kolomDipakai as $key => $value) {
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                if (! is_numeric($value)) {
                     continue;
                 }
 
@@ -144,9 +168,10 @@ class PenjualanImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-                // Extract product name from column name (e.g., 'produksi_roti_boy' -> 'Roti Boy')
-                $namaProdukStr = str_replace(['produksi_', '_'], ['', ' '], $key);
-                $namaProduk = ucwords($namaProdukStr);
+                // 'terjual_roti_boy' / 'produksi_roti_burger' -> 'Roti Boy' / 'Roti Burger'
+                $namaProdukStr = substr($key, strlen($prefix));
+                $namaProdukStr = str_replace('_', ' ', $namaProdukStr);
+                $namaProduk = $this->resolveNamaProduk($namaProdukStr);
 
                 $produk = $this->findOrCreateProduk($namaProduk);
 
@@ -177,6 +202,27 @@ class PenjualanImport implements ToCollection, WithHeadingRow
             $penjualan->bayar = $totalPenjualan;
             $penjualan->save();
         }
+    }
+
+    /**
+     * Samakan nama produk dari header kolom dengan data di database
+     * (case-insensitive) agar "roti boy" ketemu "Roti Boy".
+     * Kolom rekap seperti sisa_*, total_* tidak pernah sampai sini.
+     */
+    private function resolveNamaProduk(string $namaDariKolom): string
+    {
+        $namaDariKolom = trim($namaDariKolom);
+        if ($namaDariKolom === '') {
+            return $namaDariKolom;
+        }
+
+        $produk = Produk::whereRaw('LOWER(nama_produk) = ?', [strtolower($namaDariKolom)])->first();
+
+        if ($produk) {
+            return $produk->nama_produk;
+        }
+
+        return ucwords($namaDariKolom);
     }
 
     private function parseTanggal(mixed $tanggalRaw): Carbon

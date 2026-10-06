@@ -419,10 +419,9 @@
                                style="background: var(--input-bg); border-color: var(--border-color); padding: 0.5rem;">
 
                         <div class="form-text mt-2" style="font-size: 0.8rem; color: var(--text-muted);">
-                            Format kolom (baris pertama): <strong>Tanggal, Nomor Struk, Kasir, Metode Pembayaran,
-                                Nama Produk, Harga, Jumlah, Subtotal</strong> — satu baris per produk.
-                            Kolom <strong>Jumlah</strong> diisi manual, <strong>Subtotal</strong> dihitung otomatis
-                            (Harga × Jumlah). Unduh template untuk contoh yang sudah sesuai.
+                            Format kolom (baris pertama): <strong>Tanggal, Produksi {Nama Produk}, Terjual {Nama Produk}, ..., Sisa Hari Sebelumnya, Total Terjual, Sisa Akhir</strong> — satu baris per tanggal.
+                            Contoh: <strong>Tanggal, Produksi Roti Boy, Terjual Roti Boy, Produksi Pizza, Terjual Pizza, Produksi Roti Burger, Terjual Roti Burger, Produksi Roti Coklat, Terjual Roti Coklat, Sisa Hari Sebelumnya, Total Terjual, Sisa Akhir</strong>.
+                            Hanya kolom <strong>Terjual *</strong> yang diimport sebagai penjualan; kolom Produksi/Sisa/Total hanya info rekap dan diabaikan. Unduh template untuk contoh yang sudah sesuai.
                         </div>
                         <div class="form-text mt-2" style="font-size: 0.8rem; color: #f59e0b;">
                             <i class="fas fa-info-circle me-1"></i> Produk yang belum ada di database akan ditambahkan secara otomatis berdasarkan <strong>Nama Produk</strong>.
