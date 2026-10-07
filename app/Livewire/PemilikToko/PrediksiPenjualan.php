@@ -432,26 +432,51 @@ class PrediksiPenjualan extends Component
             $wma = $totalBobot > 0 ? round($totalBerbobot / $totalBobot, 2) : 0;
             $rekomendasiProduksi = (int) ceil($wma);
 
-            // Metrik akurasi memakai WMA sebagai nilai prediksi (F):
+            // Metrik akurasi (MAD/MSE/MAPE) memakai evaluasi ramalan
+            // satu-langkah ke depan (in-sample): untuk tiap minggu t = 2..N,
+            // ramalan F_t = WMA dari minggu-minggu sebelumnya (bobot 1..t-1),
+            // lalu dibandingkan dengan aktual X_t yang sudah ada.
+            // Ramalan minggu ke-(N+1) tidak ikut karena aktualnya belum ada.
             // MAD  = rata-rata |X - F| (semakin kecil semakin akurat)
             // MSE  = rata-rata (X - F)^2 (menghukum error besar)
             // MAPE = rata-rata |X - F| / X * 100% (X = 0 dilewati agar tidak bagi nol)
-            $totalDeviasi = 0;
-            $totalKuadrat = 0;
-            $totalPersen = 0;
-            $jumlahPersen = 0;
-            foreach ($weeklyData as $qty) {
-                $selisih = abs($qty - $wma);
-                $totalDeviasi += $selisih;
-                $totalKuadrat += $selisih ** 2;
-                if ($qty != 0) {
-                    $totalPersen += ($selisih / $qty) * 100;
-                    $jumlahPersen++;
+            $eval = [];
+            for ($t = 1; $t < $n; $t++) {
+                $totalBobotEval = 0;
+                $totalBerbobotEval = 0;
+                for ($j = 0; $j < $t; $j++) {
+                    $bobotEval = $j + 1;
+                    $totalBobotEval += $bobotEval;
+                    $totalBerbobotEval += $bobotEval * $weeklyData[$j];
                 }
+                $eval[] = [
+                    'x' => $weeklyData[$t],
+                    'f' => $totalBobotEval > 0 ? $totalBerbobotEval / $totalBobotEval : 0,
+                ];
             }
-            $mad = $n > 0 ? round($totalDeviasi / $n, 2) : 0;
-            $mse = $n > 0 ? round($totalKuadrat / $n, 2) : 0;
-            $mape = $jumlahPersen > 0 ? round($totalPersen / $jumlahPersen, 2) : 0;
+
+            $m = count($eval);
+            $mad = null;
+            $mse = null;
+            $mape = null;
+            if ($m > 0) {
+                $totalDeviasi = 0;
+                $totalKuadrat = 0;
+                $totalPersen = 0;
+                $jumlahPersen = 0;
+                foreach ($eval as $e) {
+                    $selisih = abs($e['x'] - $e['f']);
+                    $totalDeviasi += $selisih;
+                    $totalKuadrat += $selisih ** 2;
+                    if ($e['x'] != 0) {
+                        $totalPersen += ($selisih / $e['x']) * 100;
+                        $jumlahPersen++;
+                    }
+                }
+                $mad = round($totalDeviasi / $m, 2);
+                $mse = round($totalKuadrat / $m, 2);
+                $mape = $jumlahPersen > 0 ? round($totalPersen / $jumlahPersen, 2) : null;
+            }
 
             $results->push([
                 'produk' => $produk,
@@ -461,6 +486,7 @@ class PrediksiPenjualan extends Component
                 'mad' => $mad,
                 'mse' => $mse,
                 'mape' => $mape,
+                'eval' => $eval,
                 'rekomendasi' => $rekomendasiProduksi,
             ]);
         }
@@ -516,9 +542,9 @@ class PrediksiPenjualan extends Component
                 ],
                 [
                     'rata_penjualan' => $item['wma'],
-                    'mad' => $item['mad'],
-                    'mse' => $item['mse'],
-                    'mape' => $item['mape'],
+                    'mad' => $item['mad'] ?? 0,
+                    'mse' => $item['mse'] ?? 0,
+                    'mape' => $item['mape'] ?? 0,
                     'rekomendasi_produksi' => $item['rekomendasi'],
                     'created_at' => now(),
                 ]
@@ -562,8 +588,8 @@ class PrediksiPenjualan extends Component
         // Stats
         $totalProduk = $data->count();
         $avgPrediksi = $data->count() > 0 ? round($data->avg('wma'), 2) : 0;
-        $avgMad = $data->count() > 0 ? round($data->avg('mad'), 2) : 0;
-        $totalRekomendasi = $data->sum('rekomendasi');
+        $madValues = $data->whereNotNull('mad');
+        $avgMad = $madValues->count() > 0 ? round($madValues->avg('mad'), 2) : null;
         $totalTerjualPeriode = $data->sum('total');
 
         return view('livewire.pemilik-toko.prediksi-penjualan', [
@@ -572,7 +598,6 @@ class PrediksiPenjualan extends Component
             'totalProduk' => $totalProduk,
             'avgPrediksi' => $avgPrediksi,
             'avgMad' => $avgMad,
-            'totalRekomendasi' => $totalRekomendasi,
             'totalTerjualPeriode' => $totalTerjualPeriode,
             'startDate' => $startDate,
             'endDate' => $endDate,

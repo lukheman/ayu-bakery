@@ -103,12 +103,6 @@
             color: #111;
         }
 
-        table.main td.rekomendasi {
-            background: #ddd;
-            font-weight: 700;
-            color: #111;
-        }
-
         table.main th.th-ma {
             background: #ddd;
         }
@@ -131,10 +125,6 @@
 
         table.main th.th-mad {
             background: #e8c9c9;
-        }
-
-        table.main th.th-rek {
-            background: #ccc;
         }
 
         .text-right { text-align: right; }
@@ -175,11 +165,12 @@
     <div class="formula-box">
         <strong>Rumus:</strong> WMA = (1·X₁ + 2·X₂ + ... + N·Xₙ) / (1 + 2 + ... + N) &nbsp;&mdash;&nbsp;
         X = qty penjualan per minggu, N = {{ $jumlahPeriode }} periode (minggu terbaru bobot terbesar).
-        Hasil WMA = prediksi penjualan minggu berikutnya. Rekomendasi produksi = pembulatan ke atas dari WMA.
+        Hasil WMA = prediksi penjualan minggu berikutnya.
         <br>
-        <strong>Akurasi:</strong> MAD = Σ|X − WMA| / N &nbsp;·&nbsp;
-        MSE = Σ(X − WMA)² / N &nbsp;·&nbsp;
-        MAPE = Σ(|X − WMA| / X × 100%) / N &nbsp;&mdash;&nbsp;
+        <strong>Akurasi (evaluasi ramalan satu-langkah ke depan — tiap minggu diramal dari minggu-minggu sebelumnya):</strong>
+        MAD = Σ|Xₜ − Fₜ| / n &nbsp;·&nbsp;
+        MSE = Σ(Xₜ − Fₜ)² / n &nbsp;·&nbsp;
+        MAPE = Σ(|Xₜ − Fₜ| / Xₜ × 100%) / n &nbsp;&mdash;&nbsp;
         semakin kecil nilainya, semakin akurat hasil peramalan.
     </div>
 
@@ -196,7 +187,6 @@
                 <th class="th-mad">MAD</th>
                 <th class="th-mse">MSE</th>
                 <th class="th-mse">MAPE</th>
-                <th class="th-rek">Rekomendasi</th>
             </tr>
         </thead>
         <tbody>
@@ -213,14 +203,13 @@
                         <td>{{ $qty }}</td>
                     @endforeach
                     <td class="ma">{{ number_format($item['wma'], 1) }}</td>
-                    <td class="mad">{{ number_format($item['mad'], 2) }}</td>
-                    <td class="mse">{{ number_format($item['mse'], 2) }}</td>
-                    <td class="mse">{{ number_format($item['mape'], 2) }}%</td>
-                    <td class="rekomendasi">{{ $item['rekomendasi'] }} {{ $item['produk']->unit ?? 'pcs' }}</td>
+                    <td class="mad">{{ $item['mad'] === null ? '-' : number_format($item['mad'], 2) }}</td>
+                    <td class="mse">{{ $item['mse'] === null ? '-' : number_format($item['mse'], 2) }}</td>
+                    <td class="mse">{{ $item['mape'] === null ? '-' : number_format($item['mape'], 2).'%' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($weeks) + 6 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
+                    <td colspan="{{ count($weeks) + 5 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
                         Tidak ada data produk.
                     </td>
                 </tr>
@@ -238,13 +227,11 @@
                     WMA = <strong
                         style="color: #111;">{{ number_format($item['wma'], 2) }}</strong>
                     &nbsp;|&nbsp; MAD = <strong
-                        style="color: #111;">{{ number_format($item['mad'], 2) }}</strong>
+                        style="color: #111;">{{ $item['mad'] === null ? '-' : number_format($item['mad'], 2) }}</strong>
                     &nbsp;|&nbsp; MSE = <strong
-                        style="color: #111;">{{ number_format($item['mse'], 2) }}</strong>
+                        style="color: #111;">{{ $item['mse'] === null ? '-' : number_format($item['mse'], 2) }}</strong>
                     &nbsp;|&nbsp; MAPE = <strong
-                        style="color: #111;">{{ number_format($item['mape'], 2) }}%</strong>
-                    → Rekomendasi: <strong style="color: #111;">{{ $item['rekomendasi'] }}</strong>
-                    {{ $item['produk']->unit ?? 'pcs' }}
+                        style="color: #111;">{{ $item['mape'] === null ? '-' : number_format($item['mape'], 2).'%' }}</strong>
                 </div>
             @endforeach
         </div>
