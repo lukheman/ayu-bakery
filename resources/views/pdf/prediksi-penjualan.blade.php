@@ -163,7 +163,9 @@
     <div class="info">
         Periode analisis: <strong>{{ $jumlahPeriode }} minggu terakhir</strong>
         ({{ $startDate->format('d/m/Y') }} — {{ $endDate->format('d/m/Y') }})
-        @if(!empty($isFallback ?? false))
+        @if(!empty($isManual ?? false))
+            <br><span style="font-size: 10px;">Periode pilihan manual (Dari–Sampai Minggu).</span>
+        @elseif(!empty($isFallback ?? false))
             <br><span style="font-size: 10px;">Tidak ada penjualan pada minggu-minggu terakhir, sehingga
                 ditampilkan {{ $jumlahPeriode }} minggu dengan penjualan terbanyak.</span>
         @endif

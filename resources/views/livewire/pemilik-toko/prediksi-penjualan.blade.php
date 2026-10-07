@@ -115,14 +115,54 @@
     {{-- Filter Bar --}}
     <div class="modern-card mb-4" style="padding: 1rem 1.25rem;">
         <div class="row g-2 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label"
                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Jumlah
-                    Periode (N Minggu)</label>
+                    Periode (N)</label>
                 <input type="number" class="form-control" wire:model.live.debounce.500ms="jumlahPeriode" min="2"
-                    max="12" placeholder="4">
+                    max="12" placeholder="4" title="N minggu terakhir (otomatis)">
             </div>
-            <div class="col-md-5">
+            <div class="col-md-4">
+                <label class="form-label"
+                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Dari
+                    Minggu</label>
+                <select class="form-select" wire:model.live="mingguDari"
+                    style="background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary); border-radius: 8px; padding: 0.75rem 1rem;">
+                    <option value="">Otomatis</option>
+                    @foreach ($mingguTersedia as $m)
+                        <option value="{{ $m['value'] }}">{{ $m['label'] }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label"
+                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Sampai
+                    Minggu</label>
+                <select class="form-select" wire:model.live="mingguSampai"
+                    style="background: var(--input-bg); border-color: var(--border-color); color: var(--text-primary); border-radius: 8px; padding: 0.75rem 1rem;">
+                    <option value="">Otomatis</option>
+                    @foreach ($mingguTersedia as $m)
+                        <option value="{{ $m['value'] }}">{{ $m['label'] }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                @if ($isManual)
+                    <button class="btn btn-modern w-100"
+                        style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.65rem 1rem;"
+                        wire:click="resetPeriode" title="Kembali ke periode otomatis">
+                        <i class="fas fa-rotate-left me-1"></i> Otomatis
+                    </button>
+                @else
+                    <div
+                        style="font-size: 0.75rem; color: var(--text-muted); padding: 0.65rem 0.25rem;">
+                        <i class="fas fa-circle-info me-1"></i>Mode otomatis
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="row g-2 align-items-end mt-2">
+            <div class="col-md-8">
                 <label class="form-label"
                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Cari
                     Produk</label>
@@ -136,9 +176,12 @@
                 <div
                     style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-tertiary); padding: 0.65rem 1rem; border-radius: 8px; width: 100%;">
                     <i class="fas fa-calendar-alt me-1"></i>
-                    Data {{ $jumlahPeriode }} minggu:
+                    Data {{ $nAktif }} minggu:
                     {{ $startDate->format('d/m/Y') }} –
-                    {{ $startDate->copy()->addWeeks($jumlahPeriode)->subDay()->format('d/m/Y') }}
+                    {{ $startDate->copy()->addWeeks($nAktif)->subDay()->format('d/m/Y') }}
+                    @if ($isManual)
+                        <span style="font-weight: 700;">(manual)</span>
+                    @endif
                 </div>
             </div>
         </div>
