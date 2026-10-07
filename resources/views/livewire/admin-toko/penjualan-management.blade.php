@@ -3,6 +3,9 @@
     <x-page-header title="Data Penjualan" subtitle="Kelola data penjualan per produk (tambah, ubah, hapus, import)">
         <x-slot:actions>
             <div class="d-flex gap-2">
+                <x-button variant="danger" icon="fas fa-trash-alt" wire:click="openDeleteAllModal">
+                    Hapus Semua
+                </x-button>
                 <x-button variant="warning" icon="fas fa-file-import" wire:click="openImportModal">
                     Import Data Penjualan
                 </x-button>
@@ -285,6 +288,43 @@
                         </x-button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Delete All Confirmation Modal --}}
+    @if ($showDeleteAllModal)
+        <div class="modal-backdrop-custom" wire:click.self="closeDeleteAllModal">
+            <div class="modal-content-custom" wire:click.stop style="max-width: 500px; border-top: 4px solid var(--danger-color);">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title-custom" style="color: var(--danger-color);">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Hapus Semua Data?
+                    </h5>
+                    <button type="button" class="modal-close-btn" wire:click="closeDeleteAllModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Akan menghapus <strong>{{ number_format($totalBaris) }} baris</strong> data penjualan
+                    yang tampil pada filter saat ini (termasuk transaksi yang kehabisan item).
+                    Tindakan ini <strong>tidak dapat dibatalkan</strong>.
+                </p>
+                <div class="mb-3">
+                    <label for="confirmText" class="form-label">Ketik <strong>HAPUS</strong> untuk mengonfirmasi</label>
+                    <input type="text" class="form-control @error('confirmText') is-invalid @enderror" id="confirmText"
+                        wire:model="confirmText" placeholder="HAPUS" autocomplete="off">
+                    @error('confirmText')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <x-button type="button" variant="outline" wire:click="closeDeleteAllModal">
+                        Batal
+                    </x-button>
+                    <x-button type="button" variant="danger" wire:click="deleteAll">
+                        <i class="fas fa-trash-alt me-2"></i>Ya, Hapus Semua
+                    </x-button>
+                </div>
             </div>
         </div>
     @endif

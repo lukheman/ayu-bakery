@@ -101,6 +101,50 @@ class PenjualanManagementCrudTest extends TestCase
         $this->assertEquals(0, PenjualanKasir::count());
     }
 
+    public function test_hapus_semua_mengikuti_filter(): void
+    {
+        Kasir::factory()->create();
+        $produks = Produk::factory()->count(2)->create();
+
+        foreach (['2026-04-01', '2026-04-02'] as $tgl) {
+            foreach ($produks as $produk) {
+                Livewire::test(PenjualanManagement::class)
+                    ->call('openCreateModal')
+                    ->set('tanggal', $tgl)
+                    ->set('id_produk', $produk->id)
+                    ->set('harga', 10000)
+                    ->set('jumlah', 1)
+                    ->call('save')
+                    ->assertHasNoErrors();
+            }
+        }
+        $this->assertEquals(4, ItemPenjualan::count());
+
+        // Konfirmasi salah -> ditolak, data utuh.
+        Livewire::test(PenjualanManagement::class)
+            ->set('tanggalDari', '2026-04-01')
+            ->set('tanggalSampai', '2026-04-01')
+            ->call('openDeleteAllModal')
+            ->assertSet('showDeleteAllModal', true)
+            ->set('confirmText', 'hapus')
+            ->call('deleteAll')
+            ->assertHasErrors(['confirmText']);
+        $this->assertEquals(4, ItemPenjualan::count());
+
+        // Konfirmasi benar -> hanya baris terfilter yang terhapus.
+        Livewire::test(PenjualanManagement::class)
+            ->set('tanggalDari', '2026-04-01')
+            ->set('tanggalSampai', '2026-04-01')
+            ->call('openDeleteAllModal')
+            ->set('confirmText', 'HAPUS')
+            ->call('deleteAll')
+            ->assertHasNoErrors();
+
+        $this->assertEquals(2, ItemPenjualan::count());
+        $this->assertEquals(0, PenjualanKasir::whereDate('tanggal', '2026-04-01')->count());
+        $this->assertEquals(1, PenjualanKasir::whereDate('tanggal', '2026-04-02')->count());
+    }
+
     public function test_import_excel_dari_menu_data_penjualan(): void
     {
         Kasir::factory()->create();

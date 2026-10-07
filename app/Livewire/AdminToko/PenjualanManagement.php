@@ -51,6 +51,11 @@ class PenjualanManagement extends Component
 
     public ?int $deletingItemId = null;
 
+    // Hapus semua (sesuai filter aktif)
+    public bool $showDeleteAllModal = false;
+
+    public string $confirmText = '';
+
     // Import Excel
     public $fileExcel;
 
@@ -308,6 +313,53 @@ class PenjualanManagement extends Component
     {
         $this->showDeleteModal = false;
         $this->deletingItemId = null;
+    }
+
+    public function openDeleteAllModal(): void
+    {
+        if ((clone $this->baseQuery())->count() === 0) {
+            session()->flash('error', 'Tidak ada data penjualan pada filter saat ini.');
+
+            return;
+        }
+
+        $this->confirmText = '';
+        $this->resetValidation();
+        $this->showDeleteAllModal = true;
+    }
+
+    public function closeDeleteAllModal(): void
+    {
+        $this->showDeleteAllModal = false;
+        $this->confirmText = '';
+    }
+
+    /**
+     * Hapus seluruh baris produk yang tampil pada filter aktif.
+     * Transaksi yang kehabisan item ikut terhapus otomatis.
+     */
+    public function deleteAll(): void
+    {
+        if (trim($this->confirmText) !== 'HAPUS') {
+            $this->addError('confirmText', 'Ketik HAPUS (huruf kapital) untuk mengonfirmasi.');
+
+            return;
+        }
+
+        $ids = (clone $this->baseQuery())->pluck('id')->all();
+
+        DB::transaction(function () use ($ids) {
+            $parentIds = ItemPenjualan::whereIn('id', $ids)->pluck('id_penjualan')->unique()->all();
+            ItemPenjualan::whereIn('id', $ids)->delete();
+
+            foreach ($parentIds as $parentId) {
+                $this->refreshTotals($parentId);
+            }
+        });
+
+        session()->flash('success', count($ids).' baris data penjualan berhasil dihapus.');
+        $this->closeDeleteAllModal();
+        $this->resetPage();
     }
 
     protected function resetForm(): void
