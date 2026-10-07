@@ -589,6 +589,7 @@
             <x-sidebar-link href="{{ route('admintoko.produk') }}" icon="fas fa-box" :active="request()->routeIs('admintoko.produk')">Produk</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.persediaan') }}" icon="fas fa-boxes" :active="request()->routeIs('admintoko.persediaan')">Persediaan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.pesanan') }}" icon="fas fa-shopping-cart" :active="request()->routeIs('admintoko.pesanan')">Pesanan</x-sidebar-link>
+            <x-sidebar-link href="{{ route('admintoko.penjualan') }}" icon="fas fa-cash-register" :active="request()->routeIs('admintoko.penjualan')">Data Penjualan</x-sidebar-link>
             <x-sidebar-link href="{{ route('admintoko.prediksi-penjualan') }}" icon="fas fa-chart-line" :active="request()->routeIs('admintoko.prediksi-penjualan')">Prediksi Penjualan</x-sidebar-link>
         @endauth
 

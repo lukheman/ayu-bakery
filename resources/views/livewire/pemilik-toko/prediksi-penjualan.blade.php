@@ -10,10 +10,10 @@
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
-            <button wire:click="$set('showImportModal', true)" class="btn btn-modern"
-                style="background: #f59e0b; color: white; border: none; display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 0.5rem 1rem;">
-                <i class="fas fa-file-import"></i> Import Data Penjualan
-            </button>
+            <a href="{{ route('admintoko.penjualan') }}" class="btn btn-modern"
+                style="background: #f59e0b; color: white; border: none; display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 0.5rem 1rem; text-decoration: none;">
+                <i class="fas fa-file-import"></i> Kelola Data Penjualan
+            </a>
             <button wire:click="simpanPrediksi" class="btn btn-modern"
                 style="background: var(--success-color); color: white; border: none; display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-save"></i> Simpan Prediksi
@@ -136,7 +136,9 @@
                 <div
                     style="font-size: 0.78rem; color: var(--text-muted); background: var(--bg-tertiary); padding: 0.65rem 1rem; border-radius: 8px; width: 100%;">
                     <i class="fas fa-calendar-alt me-1"></i>
-                    Data {{ $jumlahPeriode }} minggu terakhir
+                    Data {{ $jumlahPeriode }} minggu:
+                    {{ $startDate->format('d/m/Y') }} –
+                    {{ $startDate->copy()->addWeeks($jumlahPeriode)->subDay()->format('d/m/Y') }}
                 </div>
             </div>
         </div>
@@ -161,72 +163,96 @@
             </div>
         </div>
         <script type="application/json" id="grafikPrediksiData">@json($chartData)</script>
+        @if ($isFallback)
+            <div class="alert alert-modern mt-3 mb-0"
+                style="background: rgba(99,102,241,0.08); color: var(--text-primary); border: 1px solid rgba(99,102,241,0.25); border-radius: 12px; padding: 0.85rem 1.1rem; font-size: 0.82rem;">
+                <i class="fas fa-history me-2" style="color: var(--primary-color);"></i>
+                Tidak ada penjualan pada {{ $jumlahPeriode }} minggu terakhir, jadi grafik menampilkan
+                {{ $jumlahPeriode }} minggu dengan penjualan terbanyak
+                ({{ $startDate->format('d/m/Y') }} – {{ $endDate->format('d/m/Y') }}).
+            </div>
+        @elseif ($totalTerjualPeriode <= 0)
+            <div class="alert alert-modern mt-3 mb-0"
+                style="background: rgba(245,158,11,0.1); color: var(--text-primary); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 0.85rem 1.1rem; font-size: 0.82rem;">
+                <i class="fas fa-info-circle me-2" style="color: #f59e0b;"></i>
+                Belum ada data penjualan sama sekali. Grafik terlihat datar; import data penjualan
+                terlebih dahulu.
+            </div>
+        @endif
     </div>
 
     <script src="{{ asset('assets/chartjs/chart.umd.min.js') }}"></script>
+    @script
     <script>
-        (function () {
-            function buildAllConfig(payload) {
-                return {
-                    type: 'bar',
-                    data: {
-                        labels: payload.labels,
-                        datasets: [
-                            { label: 'Total aktual', data: payload.total, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
-                            { label: 'WMA (prediksi)', data: payload.wma, backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 6 },
-                            { label: 'Rekomendasi', data: payload.rekomendasi, backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6 },
-                        ],
+        function buildAllConfig(payload) {
+            return {
+                type: 'bar',
+                data: {
+                    labels: payload.labels,
+                    datasets: [
+                        { label: 'Total aktual', data: payload.total, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
+                        { label: 'WMA (prediksi)', data: payload.wma, backgroundColor: 'rgba(245,158,11,0.85)', borderRadius: 6 },
+                        { label: 'Rekomendasi', data: payload.rekomendasi, backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 6 },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Qty' } },
+                        x: { ticks: { maxRotation: 45 } },
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'Qty' } },
-                            x: { ticks: { maxRotation: 45 } },
-                        },
-                    },
-                };
-            }
+                },
+            };
+        }
 
-            function buildDetailConfig(payload) {
-                return {
-                    data: {
-                        labels: payload.labels,
-                        datasets: [
-                            { type: 'bar', label: 'Aktual (' + payload.unit + ')', data: payload.aktual, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
-                            { type: 'line', label: 'WMA / Prediksi (' + payload.wmaValue + ')', data: payload.wma, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Qty (' + payload.unit + ')' } } },
-                        plugins: { title: { display: true, text: payload.title } },
-                    },
-                };
-            }
+        function buildDetailConfig(payload) {
+            return {
+                type: 'bar',
+                data: {
+                    labels: payload.labels,
+                    datasets: [
+                        { type: 'bar', label: 'Aktual (' + payload.unit + ')', data: payload.aktual, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6 },
+                        { type: 'line', label: 'WMA / Prediksi (' + payload.wmaValue + ')', data: payload.wma, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Qty (' + payload.unit + ')' } } },
+                    plugins: { title: { display: true, text: payload.title } },
+                },
+            };
+        }
 
-            function renderPrediksiChart() {
-                var el = document.getElementById('grafikPrediksi');
-                var dataEl = document.getElementById('grafikPrediksiData');
-                if (!el || !dataEl || typeof Chart === 'undefined') return;
-                var payload;
-                try {
-                    payload = JSON.parse(dataEl.textContent);
-                } catch (e) {
-                    return;
-                }
-                if (window.grafikPrediksi) window.grafikPrediksi.destroy();
-                window.grafikPrediksi = new Chart(el, payload.mode === 'detail' ? buildDetailConfig(payload) : buildAllConfig(payload));
+        function renderPrediksiChart() {
+            var el = document.getElementById('grafikPrediksi');
+            var dataEl = document.getElementById('grafikPrediksiData');
+            if (!el || !dataEl || typeof Chart === 'undefined') return;
+            var payload;
+            try {
+                payload = JSON.parse(dataEl.textContent);
+            } catch (e) {
+                return;
             }
+            if (!payload || !payload.labels || payload.labels.length === 0) return;
+            var existing = (typeof Chart.getChart === 'function') ? Chart.getChart(el) : window.grafikPrediksi;
+            if (existing) existing.destroy();
+            window.grafikPrediksi = new Chart(el, payload.mode === 'detail' ? buildDetailConfig(payload) : buildAllConfig(payload));
+        }
 
-            renderPrediksiChart();
+        function registerPrediksiChartHook() {
             if (window.Livewire && !window._prediksiChartHookRegistered) {
                 window._prediksiChartHookRegistered = true;
                 Livewire.hook('morph.updated', function () { renderPrediksiChart(); });
             }
-        })();
+        }
+
+        renderPrediksiChart();
+        registerPrediksiChartHook();
+        document.addEventListener('livewire:init', registerPrediksiChartHook);
     </script>
+    @endscript
 
     {{-- Results Table --}}
     <div class="modern-card" style="padding: 0; overflow: hidden;">
@@ -394,60 +420,4 @@
         </div>
     </div>
 
-    {{-- Import Modal --}}
-    @if ($showImportModal)
-        <div class="modal-backdrop-custom" wire:click.self="closeImportModal">
-            <div class="modal-content-custom" wire:click.stop style="max-width: 500px;">
-                <div class="modal-header-custom">
-                    <h5 class="modal-title-custom">Import Data Penjualan</h5>
-                    <button type="button" class="modal-close-btn" wire:click="closeImportModal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <form wire:submit="importExcel">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label mb-0" style="font-weight: 600; color: var(--text-primary);">Pilih File Excel / CSV</label>
-                            <button type="button" class="btn btn-sm"
-                                style="background: rgba(99,102,241,0.1); color: var(--primary-color); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; font-weight: 600; font-size: 0.8rem;"
-                                wire:click="downloadTemplate">
-                                <i class="fas fa-download me-1"></i> Unduh Template
-                            </button>
-                        </div>
-                        <input type="file" class="form-control"
-                               wire:model="fileExcel" accept=".xlsx,.xls,.csv" required
-                               style="background: var(--input-bg); border-color: var(--border-color); padding: 0.5rem;">
-
-                        <div class="form-text mt-2" style="font-size: 0.8rem; color: var(--text-muted);">
-                            Format kolom (baris pertama): <strong>Tanggal, Produksi {Nama Produk}, Terjual {Nama Produk}, ..., Sisa Hari Sebelumnya, Total Terjual, Sisa Akhir</strong> — satu baris per tanggal.
-                            Contoh: <strong>Tanggal, Produksi Roti Boy, Terjual Roti Boy, Produksi Pizza, Terjual Pizza, Produksi Roti Burger, Terjual Roti Burger, Produksi Roti Coklat, Terjual Roti Coklat, Sisa Hari Sebelumnya, Total Terjual, Sisa Akhir</strong>.
-                            Hanya kolom <strong>Terjual *</strong> yang diimport sebagai penjualan; kolom Produksi/Sisa/Total hanya info rekap dan diabaikan. Unduh template untuk contoh yang sudah sesuai.
-                        </div>
-                        <div class="form-text mt-2" style="font-size: 0.8rem; color: #f59e0b;">
-                            <i class="fas fa-info-circle me-1"></i> Produk yang belum ada di database akan ditambahkan secara otomatis berdasarkan <strong>Nama Produk</strong>.
-                        </div>
-                        
-                        @error('fileExcel') 
-                            <div class="invalid-feedback d-block">{{ $message }}</div> 
-                        @enderror
-                        
-                        <div wire:loading wire:target="fileExcel" class="mt-2 text-primary small" style="font-size: 0.85rem;">
-                            <i class="fas fa-spinner fa-spin me-1"></i> Mengunggah file...
-                        </div>
-                        <div wire:loading wire:target="importExcel" class="mt-2 text-primary small" style="font-size: 0.85rem;">
-                            <i class="fas fa-spinner fa-spin me-1"></i> Memproses data...
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-modern" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);" wire:click="closeImportModal">
-                            Batal
-                        </button>
-                        <button type="submit" class="btn btn-modern btn-primary-modern" wire:loading.attr="disabled">
-                            Import Data
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
 </div>

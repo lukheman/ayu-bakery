@@ -3,34 +3,26 @@
 namespace App\Livewire\PemilikToko;
 
 use App\Enums\StatusPesanan;
-use App\Exports\PenjualanTemplateExport;
-use App\Imports\PenjualanImport;
 use App\Models\ItemPenjualan;
 use App\Models\ItemPesanan;
 use App\Models\MovingAverage;
+use App\Models\PenjualanKasir;
 use App\Models\Produk;
+use App\Models\Transaksi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Livewire\WithFileUploads;
-use Maatwebsite\Excel\Facades\Excel;
 
 #[Title('Prediksi Penjualan (Weighted Moving Average) - Ayu Bakery')]
 #[Layout('layouts.app')]
 class PrediksiPenjualan extends Component
 {
-    use WithFileUploads;
-
     public int $jumlahPeriode = 4;
 
     public string $search = '';
-
-    public $fileExcel;
-
-    public bool $showImportModal = false;
 
     public $chartProdukId = null;
 
@@ -45,16 +37,218 @@ class PrediksiPenjualan extends Component
     }
 
     /**
-     * Hitung penjualan per produk per minggu.
-     * Menggabungkan data dari item_penjualan (kasir) dan item_pesanan (reseller selesai).
+     * Kunci minggu ISO (YYYYWW) yang sama dengan YEARWEEK(tanggal, 1) di MySQL.
      */
-    private function hitungDataMingguan(): Collection
+    private function kunciMinggu(Carbon $tanggal): int
+    {
+        return intval($tanggal->isoFormat('GGGG').str_pad($tanggal->isoFormat('WW'), 2, '0', STR_PAD_LEFT));
+    }
+
+    /**
+     * Rentang primer: N minggu dijangkarkan ke tanggal penjualan terbaru
+     * (kasir / reseller selesai). Tanpa penjangkaran, bila data terakhir
+     * lebih lama dari hari ini (mis. data impor Januari dibuka kembali
+     * berbulan-bulan kemudian), seluruh grafik dan tabel berisi nol dan
+     * grafik terlihat kosong.
+     *
+     * @return array{0: Carbon, 1: Carbon} [startDate, endDate]
+     */
+    private function rentangPrimer(): array
     {
         $n = $this->jumlahPeriode;
 
-        // Tentukan rentang waktu: N minggu terakhir dari hari ini
-        $endDate = Carbon::now()->endOfWeek();
-        $startDate = Carbon::now()->subWeeks($n)->startOfWeek();
+        $kandidat = [];
+        $terakhirKasir = PenjualanKasir::max('tanggal');
+        if ($terakhirKasir) {
+            $kandidat[] = Carbon::parse($terakhirKasir);
+        }
+        $terakhirReseller = Transaksi::query()
+            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
+            ->max('tanggal');
+        if ($terakhirReseller) {
+            $kandidat[] = Carbon::parse($terakhirReseller);
+        }
+
+        $jangkar = null;
+        foreach ($kandidat as $tanggal) {
+            if (! $jangkar || $tanggal->gt($jangkar)) {
+                $jangkar = $tanggal;
+            }
+        }
+
+        $acuan = ($jangkar && $jangkar->lessThan(Carbon::now())) ? $jangkar : Carbon::now();
+
+        return [$acuan->copy()->subWeeks($n)->startOfWeek(), $acuan->copy()->endOfWeek()];
+    }
+
+    /**
+     * Hitung analisis lengkap: data mingguan + label minggu + rentang.
+     * Pengecekan memakai total per BUCKET (bukan total mentah rentang) agar
+     * konsisten dengan yang tampil di grafik/tabel. Bila jendela primer
+     * kosong namun masih ada data lama, otomatis mundur ke N minggu
+     * berurutan dengan penjualan terbanyak.
+     *
+     * @return array{data: Collection, weeks: array, start: Carbon, end: Carbon, fallback: bool}
+     */
+    private function dataAnalisis(): array
+    {
+        $n = $this->jumlahPeriode;
+
+        [$start, $end] = $this->rentangPrimer();
+        $data = $this->hitungDataMingguan($start, $end);
+
+        if ($data->sum('total') > 0 || ! $this->adaDataLebihLama($start)) {
+            return [
+                'data' => $data,
+                'weeks' => $this->daftarMinggu($start, $n),
+                'start' => $start,
+                'end' => $end,
+                'fallback' => false,
+            ];
+        }
+
+        $fb = $this->jendelaDataTerbanyak($n);
+        if ($fb) {
+            return [
+                'data' => $this->hitungDataMingguan($fb[0], $fb[1]),
+                'weeks' => $this->daftarMinggu($fb[0], $n),
+                'start' => $fb[0],
+                'end' => $fb[1],
+                'fallback' => true,
+            ];
+        }
+
+        return [
+            'data' => $data,
+            'weeks' => $this->daftarMinggu($start, $n),
+            'start' => $start,
+            'end' => $end,
+            'fallback' => false,
+        ];
+    }
+
+    /**
+     * Apakah masih ada data penjualan yang lebih lama dari batas awal?
+     */
+    private function adaDataLebihLama(Carbon $start): bool
+    {
+        if (PenjualanKasir::where('tanggal', '<', $start)->exists()) {
+            return true;
+        }
+
+        return Transaksi::query()
+            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
+            ->where('tanggal', '<', $start)
+            ->exists();
+    }
+
+    /**
+     * Cari N minggu kalender berurutan dengan total penjualan terbanyak
+     * di seluruh riwayat (kasir + reseller selesai). Seri dimenangkan oleh
+     * periode paling akhir. Mengembalikan null bila tidak ada data.
+     *
+     * @return array{0: Carbon, 1: Carbon}|null [startDate, endDate]
+     */
+    private function jendelaDataTerbanyak(int $n): ?array
+    {
+        $kasirMin = PenjualanKasir::min('tanggal');
+        $resellerMin = Transaksi::query()
+            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
+            ->min('tanggal');
+        $kasirMax = PenjualanKasir::max('tanggal');
+        $resellerMax = Transaksi::query()
+            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
+            ->max('tanggal');
+
+        $batas = collect([$kasirMin, $resellerMin, $kasirMax, $resellerMax])->filter();
+        if ($batas->isEmpty()) {
+            return null;
+        }
+
+        $min = Carbon::parse($batas->min())->startOfWeek();
+        $max = Carbon::parse($batas->max())->startOfWeek();
+
+        $qtyKasir = ItemPenjualan::query()
+            ->join('penjualan_kasir', 'item_penjualan.id_penjualan', '=', 'penjualan_kasir.id')
+            ->selectRaw('YEARWEEK(penjualan_kasir.tanggal, 1) as yw, SUM(item_penjualan.jumlah) as qty')
+            ->groupBy('yw')
+            ->pluck('qty', 'yw');
+        $qtyReseller = ItemPesanan::query()
+            ->join('pesanan', 'item_pesanan.id_pesanan', '=', 'pesanan.id')
+            ->join('transaksi', 'pesanan.id', '=', 'transaksi.id_pesanan')
+            ->where('pesanan.status', StatusPesanan::SELESAI->value)
+            ->selectRaw('YEARWEEK(transaksi.tanggal, 1) as yw, SUM(item_pesanan.jumlah) as qty')
+            ->groupBy('yw')
+            ->pluck('qty', 'yw');
+
+        // Susun qty per minggu kalender berurutan dari minggu terlama.
+        $mingguan = [];
+        $w = $min->copy();
+        while ($w->lessThanOrEqualTo($max)) {
+            $key = (string) $this->kunciMinggu($w);
+            $mingguan[] = [
+                'start' => $w->copy(),
+                'qty' => (int) ($qtyKasir[$key] ?? 0) + (int) ($qtyReseller[$key] ?? 0),
+            ];
+            $w->addWeek();
+        }
+
+        // Sliding window N minggu: total terbesar, seri pilih yang terbaru.
+        $terbaik = null;
+        $totalTerbaik = 0;
+        $jumlah = count($mingguan);
+        for ($i = 0; $i <= $jumlah - $n; $i++) {
+            $total = 0;
+            for ($j = 0; $j < $n; $j++) {
+                $total += $mingguan[$i + $j]['qty'];
+            }
+            if ($total > 0 && $total >= $totalTerbaik) {
+                $totalTerbaik = $total;
+                $terbaik = $i;
+            }
+        }
+
+        // Riwayat lebih pendek dari N minggu: tampilkan sejak minggu pertama
+        // (kekurangannya nol) selama ada penjualan.
+        if ($terbaik === null && $jumlah > 0 && array_sum(array_column($mingguan, 'qty')) > 0) {
+            $terbaik = 0;
+        }
+
+        if ($terbaik === null) {
+            return null;
+        }
+
+        $mulai = $mingguan[$terbaik]['start'];
+        $akhir = $mulai->copy()->addWeeks($n - 1)->endOfWeek();
+
+        return [$mulai, $akhir];
+    }
+
+    /**
+     * Label minggu untuk header tabel/grafik/PDF.
+     */
+    private function daftarMinggu(Carbon $startDate, int $n): array
+    {
+        $weeks = [];
+        $currentWeek = $startDate->copy();
+        for ($i = 0; $i < $n; $i++) {
+            $weeks[] = [
+                'label' => 'Mg '.($i + 1),
+                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
+            ];
+            $currentWeek->addWeek();
+        }
+
+        return $weeks;
+    }
+
+    /**
+     * Hitung penjualan per produk per minggu pada rentang tertentu.
+     * Menggabungkan data dari item_penjualan (kasir) dan item_pesanan (reseller selesai).
+     */
+    private function hitungDataMingguan(Carbon $startDate, Carbon $endDate): Collection
+    {
+        $n = $this->jumlahPeriode;
 
         // Ambil semua produk
         $produks = Produk::query()
@@ -216,7 +410,7 @@ class PrediksiPenjualan extends Component
 
     public function simpanPrediksi()
     {
-        $data = $this->hitungDataMingguan();
+        $data = $this->dataAnalisis()['data'];
 
         foreach ($data as $item) {
             MovingAverage::updateOrCreate(
@@ -241,22 +435,11 @@ class PrediksiPenjualan extends Component
 
     public function downloadPdf()
     {
-        $data = $this->hitungDataMingguan();
-
-        $n = $this->jumlahPeriode;
-        $endDate = Carbon::now()->endOfWeek();
-        $startDate = Carbon::now()->subWeeks($n)->startOfWeek();
-
-        // Generate weeks for PDF header
-        $weeks = [];
-        $currentWeek = $startDate->copy();
-        for ($i = 0; $i < $n; $i++) {
-            $weeks[] = [
-                'label' => 'Mg '.($i + 1),
-                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
-            ];
-            $currentWeek->addWeek();
-        }
+        $analisis = $this->dataAnalisis();
+        $data = $analisis['data'];
+        $weeks = $analisis['weeks'];
+        $startDate = $analisis['start'];
+        $endDate = $analisis['end'];
 
         $pdf = Pdf::loadView('pdf.prediksi-penjualan', [
             'data' => $data,
@@ -264,6 +447,7 @@ class PrediksiPenjualan extends Component
             'jumlahPeriode' => $this->jumlahPeriode,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'isFallback' => $analisis['fallback'],
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(function () use ($pdf) {
@@ -271,56 +455,20 @@ class PrediksiPenjualan extends Component
         }, 'prediksi-penjualan-wma-'.now()->format('Y-m-d').'.pdf');
     }
 
-    public function closeImportModal()
-    {
-        $this->showImportModal = false;
-        $this->reset('fileExcel');
-    }
-
-    public function downloadTemplate()
-    {
-        return Excel::download(new PenjualanTemplateExport, 'template-import-penjualan.xlsx');
-    }
-
-    public function importExcel()
-    {
-        $this->validate([
-            'fileExcel' => 'required|mimes:xlsx,xls,csv|max:5120',
-        ]);
-
-        try {
-            Excel::import(new PenjualanImport, $this->fileExcel->getRealPath());
-            session()->flash('message', 'Data penjualan berhasil diimport.');
-            $this->closeImportModal();
-        } catch (\Exception $e) {
-            session()->flash('message', 'Terjadi kesalahan saat import: '.$e->getMessage());
-        }
-    }
-
     public function render()
     {
-        $data = $this->hitungDataMingguan();
-
-        $n = $this->jumlahPeriode;
-        $endDate = Carbon::now()->endOfWeek();
-        $startDate = Carbon::now()->subWeeks($n)->startOfWeek();
-
-        // Generate weeks for view header
-        $weeks = [];
-        $currentWeek = $startDate->copy();
-        for ($i = 0; $i < $n; $i++) {
-            $weeks[] = [
-                'label' => 'Mg '.($i + 1),
-                'range' => $currentWeek->format('d/m').' - '.$currentWeek->copy()->endOfWeek()->format('d/m'),
-            ];
-            $currentWeek->addWeek();
-        }
+        $analisis = $this->dataAnalisis();
+        $data = $analisis['data'];
+        $weeks = $analisis['weeks'];
+        $startDate = $analisis['start'];
+        $endDate = $analisis['end'];
 
         // Stats
         $totalProduk = $data->count();
         $avgPrediksi = $data->count() > 0 ? round($data->avg('wma'), 2) : 0;
         $avgMad = $data->count() > 0 ? round($data->avg('mad'), 2) : 0;
         $totalRekomendasi = $data->sum('rekomendasi');
+        $totalTerjualPeriode = $data->sum('total');
 
         return view('livewire.pemilik-toko.prediksi-penjualan', [
             'data' => $data,
@@ -329,6 +477,10 @@ class PrediksiPenjualan extends Component
             'avgPrediksi' => $avgPrediksi,
             'avgMad' => $avgMad,
             'totalRekomendasi' => $totalRekomendasi,
+            'totalTerjualPeriode' => $totalTerjualPeriode,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'isFallback' => $analisis['fallback'],
             'chartData' => $this->buildChartData($data, $weeks),
         ]);
     }

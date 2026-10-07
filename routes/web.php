@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\LogoutController;
 use App\Http\Controllers\Kasir\CetakStrukController;
 use App\Livewire\Admin\Profile;
 use App\Livewire\Admin\UserManagement;
+use App\Livewire\AdminToko\PenjualanManagement;
 use App\Livewire\AdminToko\PersediaanManagement;
 use App\Livewire\AdminToko\PesananManagement;
 use App\Livewire\AdminToko\ProdukManagement;
@@ -41,6 +42,7 @@ Route::prefix('admintoko')->middleware('auth:admin_toko,pemilik_toko,kasir,resel
     Route::get('/produk', ProdukManagement::class)->name('admintoko.produk');
     Route::get('/persediaan', PersediaanManagement::class)->name('admintoko.persediaan');
     Route::get('/pesanan', PesananManagement::class)->name('admintoko.pesanan');
+    Route::get('/penjualan', PenjualanManagement::class)->name('admintoko.penjualan');
     Route::get('/pesanan/{id}/cetak-nota', [CetakNotaPesananController::class, '__invoke'])->name('admintoko.pesanan.cetak-nota');
     Route::get('/laporan-persediaan', LaporanPersediaan::class)->name('admintoko.laporan-persediaan');
     Route::get('/laporan-penjualan', LaporanPenjualan::class)->name('admintoko.laporan-penjualan');
