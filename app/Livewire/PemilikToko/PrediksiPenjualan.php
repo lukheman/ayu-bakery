@@ -31,6 +31,9 @@ class PrediksiPenjualan extends Component
 
     public $chartProdukId = null;
 
+    /** Produk yang ditampilkan pada tabel prediksi per minggu. */
+    public $tabelProdukId = null;
+
     public function updatedJumlahPeriode(): void
     {
         if ($this->jumlahPeriode < 2) {
@@ -319,6 +322,64 @@ class PrediksiPenjualan extends Component
     }
 
     /**
+     * Rumus WMA tertulis untuk ramalan minggu ke-(t+1),
+     * dihitung dari $t minggu sebelumnya (urutan terbaru dulu,
+     * seperti: ((X₃ × 3) + (X₂ × 2) + (X₁ × 1)) / 6).
+     */
+    private function rumusWma(array $weekly, int $t): string
+    {
+        $parts = [];
+        $bobot = 0;
+        for ($j = $t - 1; $j >= 0; $j--) {
+            $b = $j + 1;
+            $parts[] = '('.number_format($weekly[$j], 0, ',', '.').' × '.$b.')';
+            $bobot += $b;
+        }
+
+        return '('.implode(' + ', $parts).') / '.$bobot;
+    }
+
+    /**
+     * Susun tabel prediksi per minggu untuk satu produk:
+     * Aktual (Xt), Prediksi/Forecast (Ft), Error, |Error|, Error², %Error.
+     * Minggu pertama tidak punya ramalan (belum ada data sebelumnya).
+     */
+    private function tabelPrediksi(array $item, array $weeks): array
+    {
+        $weekly = $item['weekly'];
+        $rows = [];
+
+        foreach ($weekly as $i => $qty) {
+            $eval = $i > 0 ? ($item['eval'][$i - 1] ?? null) : null;
+            $error = $eval ? $qty - $eval['f'] : null;
+            $rows[] = [
+                'label' => $weeks[$i]['label'] ?? ('Mg '.($i + 1)),
+                'range' => $weeks[$i]['range'] ?? '',
+                'aktual' => $qty,
+                'prediksi' => $eval ? round($eval['f'], 2) : null,
+                'rumus' => $eval ? $this->rumusWma($weekly, $i) : null,
+                'error' => $error === null ? null : round($error, 2),
+                'abs' => $error === null ? null : round(abs($error), 2),
+                'sq' => $error === null ? null : round($error ** 2, 2),
+                'pct' => ($error === null || $qty == 0) ? null : round(abs($error) / $qty * 100, 2),
+            ];
+        }
+
+        $n = count($weekly);
+
+        return [
+            'produk' => $item['produk'],
+            'rows' => $rows,
+            'mad' => $item['mad'],
+            'mse' => $item['mse'],
+            'mape' => $item['mape'],
+            'wma' => $item['wma'],
+            'rumusBerikutnya' => $n > 0 ? $this->rumusWma($weekly, $n) : null,
+            'totalAktual' => array_sum($weekly),
+        ];
+    }
+
+    /**
      * Label minggu untuk header tabel/grafik/PDF.
      */
     private function daftarMinggu(Carbon $startDate, int $n): array
@@ -562,6 +623,8 @@ class PrediksiPenjualan extends Component
         $startDate = $analisis['start'];
         $endDate = $analisis['end'];
 
+        $tabelItemPdf = $data->firstWhere(fn ($i) => $i['produk']->id === (int) $this->tabelProdukId) ?? $data->first();
+
         $pdf = Pdf::loadView('pdf.prediksi-penjualan', [
             'data' => $data,
             'weeks' => $weeks,
@@ -570,6 +633,11 @@ class PrediksiPenjualan extends Component
             'endDate' => $endDate,
             'isFallback' => $analisis['fallback'],
             'isManual' => $analisis['manual'],
+            'tabel' => $tabelItemPdf ? $this->tabelPrediksi($tabelItemPdf, $weeks) : null,
+            'nextMinggu' => [
+                'label' => 'Mg '.($analisis['n'] + 1),
+                'range' => $startDate->copy()->addWeeks($analisis['n'])->format('d/m').' - '.$startDate->copy()->addWeeks($analisis['n'])->endOfWeek()->format('d/m'),
+            ],
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(function () use ($pdf) {
@@ -592,6 +660,21 @@ class PrediksiPenjualan extends Component
         $avgMad = $madValues->count() > 0 ? round($madValues->avg('mad'), 2) : null;
         $totalTerjualPeriode = $data->sum('total');
 
+        // Produk default untuk tabel per minggu = produk pertama yang valid.
+        if ($data->isNotEmpty()
+            && ! $data->firstWhere(fn ($i) => $i['produk']->id === (int) $this->tabelProdukId)) {
+            $this->tabelProdukId = $data->first()['produk']->id;
+        }
+        $tabelItem = $data->firstWhere(fn ($i) => $i['produk']->id === (int) $this->tabelProdukId);
+        $tabel = $tabelItem ? $this->tabelPrediksi($tabelItem, $weeks) : null;
+
+        // Label minggu ke-(N+1) untuk baris ramalan berikutnya.
+        $awalBerikutnya = $startDate->copy()->addWeeks($analisis['n']);
+        $nextMinggu = [
+            'label' => 'Mg '.($analisis['n'] + 1),
+            'range' => $awalBerikutnya->format('d/m').' - '.$awalBerikutnya->copy()->endOfWeek()->format('d/m'),
+        ];
+
         return view('livewire.pemilik-toko.prediksi-penjualan', [
             'data' => $data,
             'weeks' => $weeks,
@@ -605,6 +688,8 @@ class PrediksiPenjualan extends Component
             'isFallback' => $analisis['fallback'],
             'isManual' => $analisis['manual'],
             'mingguTersedia' => $this->daftarMingguTersedia,
+            'tabel' => $tabel,
+            'nextMinggu' => $nextMinggu,
             'chartData' => $this->buildChartData($data, $weeks),
         ]);
     }
