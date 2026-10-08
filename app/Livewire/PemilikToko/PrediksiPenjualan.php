@@ -20,8 +20,6 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class PrediksiPenjualan extends Component
 {
-    public int $jumlahPeriode = 4;
-
     public string $search = '';
 
     /** Pilihan manual: minggu awal & akhir (format Y-m-d, Senin). Kosong = otomatis. */
@@ -33,18 +31,6 @@ class PrediksiPenjualan extends Component
 
     /** Produk yang ditampilkan pada tabel prediksi per minggu. */
     public $tabelProdukId = null;
-
-    public function updatedJumlahPeriode(): void
-    {
-        if ($this->jumlahPeriode < 2) {
-            $this->jumlahPeriode = 2;
-        }
-        if ($this->jumlahPeriode > 12) {
-            $this->jumlahPeriode = 12;
-        }
-        // Jumlah periode = mode otomatis N minggu terakhir.
-        $this->reset(['mingguDari', 'mingguSampai']);
-    }
 
     public function resetPeriode(): void
     {
@@ -60,32 +46,42 @@ class PrediksiPenjualan extends Component
     }
 
     /**
-     * Rentang primer: N minggu dijangkarkan ke tanggal penjualan terbaru
-     * (kasir / reseller selesai). Tanpa penjangkaran, bila data terakhir
-     * lebih lama dari hari ini (mis. data impor Januari dibuka kembali
-     * berbulan-bulan kemudian), seluruh grafik dan tabel berisi nol dan
-     * grafik terlihat kosong.
+     * Rentang primer: SELURUH riwayat penjualan — mulai minggu penjualan
+     * paling lama sampai minggu penjualan terbaru (jangkar). Tidak ada
+     * batasan N minggu agar semua data ikut dihitung.
      *
      * @return array{0: Carbon, 1: Carbon} [startDate, endDate]
      */
     private function rentangPrimer(): array
     {
-        $n = $this->jumlahPeriode;
-
-        $kandidat = [];
+        $terlamaKasir = PenjualanKasir::min('tanggal');
+        $terlamaReseller = Transaksi::query()
+            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
+            ->min('tanggal');
         $terakhirKasir = PenjualanKasir::max('tanggal');
-        if ($terakhirKasir) {
-            $kandidat[] = Carbon::parse($terakhirKasir);
-        }
         $terakhirReseller = Transaksi::query()
             ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
             ->max('tanggal');
-        if ($terakhirReseller) {
-            $kandidat[] = Carbon::parse($terakhirReseller);
+
+        $kandidatAwal = collect([$terlamaKasir, $terlamaReseller])->filter();
+
+        // Belum ada data sama sekali: tampilkan 4 minggu terakhir yang kosong.
+        if ($kandidatAwal->isEmpty()) {
+            $acuan = Carbon::now();
+            $n = 4;
+
+            return [$acuan->copy()->subWeeks($n)->startOfWeek(), $acuan->copy()->endOfWeek()];
         }
 
+        $awalRaw = collect([$terlamaKasir, $terlamaReseller])
+            ->filter()
+            ->map(fn ($t) => substr((string) $t, 0, 10))
+            ->min();
+        $awal = Carbon::parse($awalRaw);
+
         $jangkar = null;
-        foreach ($kandidat as $tanggal) {
+        foreach (collect([$terakhirKasir, $terakhirReseller])->filter() as $tanggalRaw) {
+            $tanggal = Carbon::parse($tanggalRaw);
             if (! $jangkar || $tanggal->gt($jangkar)) {
                 $jangkar = $tanggal;
             }
@@ -93,7 +89,7 @@ class PrediksiPenjualan extends Component
 
         $acuan = ($jangkar && $jangkar->lessThan(Carbon::now())) ? $jangkar : Carbon::now();
 
-        return [$acuan->copy()->subWeeks($n)->startOfWeek(), $acuan->copy()->endOfWeek()];
+        return [$awal->copy()->startOfWeek(), $acuan->copy()->endOfWeek()];
     }
 
     /**
@@ -135,7 +131,7 @@ class PrediksiPenjualan extends Component
 
     /**
      * Rentang manual dari pilihan Dari/Sampai Minggu.
-     * Bila terbalik, otomatis dibalik. Maksimal 12 minggu (dipotong dari depan).
+     * Bila terbalik, otomatis dibalik. Tanpa batasan jumlah minggu.
      *
      * @return array{0: Carbon, 1: int} [startDate, jumlahMinggu]
      */
@@ -147,13 +143,7 @@ class PrediksiPenjualan extends Component
             [$dari, $sampai] = [$sampai, $dari];
         }
 
-        $n = $dari->diffInWeeks($sampai) + 1;
-        if ($n > 12) {
-            $n = 12;
-            $dari = $sampai->copy()->subWeeks($n - 1);
-        }
-
-        return [$dari, $n];
+        return [$dari, $dari->diffInWeeks($sampai) + 1];
     }
 
     /**
@@ -183,9 +173,9 @@ class PrediksiPenjualan extends Component
             ];
         }
 
-        $n = $this->jumlahPeriode;
-
         [$start, $end] = $this->rentangPrimer();
+        // N = seluruh minggu dalam rentang (tanpa batasan).
+        $n = $start->copy()->diffInWeeks($end->copy()->startOfWeek()) + 1;
         $data = $this->hitungDataMingguan($start, $end, $n);
 
         if ($data->sum('total') > 0 || ! $this->adaDataLebihLama($start)) {
@@ -323,26 +313,20 @@ class PrediksiPenjualan extends Component
 
     /**
      * Rumus WMA tertulis untuk ramalan minggu ke-(t+1),
-     * dihitung dari $t minggu sebelumnya (urutan terbaru dulu,
-     * seperti: ((X₃ × 3) + (X₂ × 2) + (X₁ × 1)) / 6).
+     * dihitung dari 3 minggu sebelumnya (urutan terbaru dulu,
+     * seperti: ((X × 3) + (X × 2) + (X × 1)) / 6).
      */
     private function rumusWma(array $weekly, int $t): string
     {
-        $parts = [];
-        $bobot = 0;
-        for ($j = $t - 1; $j >= 0; $j--) {
-            $b = $j + 1;
-            $parts[] = '('.number_format($weekly[$j], 0, ',', '.').' × '.$b.')';
-            $bobot += $b;
-        }
+        $fmt = fn ($v) => number_format($v, 0, ',', '.');
 
-        return '('.implode(' + ', $parts).') / '.$bobot;
+        return '(('.$fmt($weekly[$t - 1]).' × 3) + ('.$fmt($weekly[$t - 2]).' × 2) + ('.$fmt($weekly[$t - 3]).' × 1)) / 6';
     }
 
     /**
      * Susun tabel prediksi per minggu untuk satu produk:
      * Aktual (Xt), Prediksi/Forecast (Ft), Error, |Error|, Error², %Error.
-     * Minggu pertama tidak punya ramalan (belum ada data sebelumnya).
+     * Tiga minggu pertama tidak punya ramalan (butuh 3 minggu sebelumnya).
      */
     private function tabelPrediksi(array $item, array $weeks): array
     {
@@ -350,7 +334,7 @@ class PrediksiPenjualan extends Component
         $rows = [];
 
         foreach ($weekly as $i => $qty) {
-            $eval = $i > 0 ? ($item['eval'][$i - 1] ?? null) : null;
+            $eval = $i >= 3 ? ($item['eval'][$i - 3] ?? null) : null;
             $error = $eval ? $qty - $eval['f'] : null;
             $rows[] = [
                 'label' => $weeks[$i]['label'] ?? ('Mg '.($i + 1)),
@@ -374,7 +358,7 @@ class PrediksiPenjualan extends Component
             'mse' => $item['mse'],
             'mape' => $item['mape'],
             'wma' => $item['wma'],
-            'rumusBerikutnya' => $n > 0 ? $this->rumusWma($weekly, $n) : null,
+            'rumusBerikutnya' => $n >= 3 ? $this->rumusWma($weekly, $n) : null,
             'totalAktual' => array_sum($weekly),
         ];
     }
@@ -481,38 +465,35 @@ class PrediksiPenjualan extends Component
                 $totalQty += $qty;
             }
 
-            // WMA (Weighted Moving Average): minggu terbaru diberi bobot terbesar.
-            // Bobot linear 1..N (X1 tertua bobot 1, XN terbaru bobot N).
+            // WMA orde 3 tetap: ramalan memakai 3 minggu sebelumnya
+            // dengan bobot 1 (terlama), 2, 3 (terbaru):
+            // F = (1·X_{t-3} + 2·X_{t-2} + 3·X_{t-1}) / 6.
+            // Bila data kurang dari 3 minggu, pakai semua yang ada (bobot 1..k).
+            $orde = min(3, $n);
             $totalBobot = 0;
             $totalBerbobot = 0;
-            foreach ($weeklyData as $i => $qty) {
-                $bobot = $i + 1;
+            for ($j = $n - $orde; $j < $n; $j++) {
+                $bobot = $j - ($n - $orde) + 1;
                 $totalBobot += $bobot;
-                $totalBerbobot += $bobot * $qty;
+                $totalBerbobot += $bobot * $weeklyData[$j];
             }
             $wma = $totalBobot > 0 ? round($totalBerbobot / $totalBobot, 2) : 0;
             $rekomendasiProduksi = (int) ceil($wma);
 
             // Metrik akurasi (MAD/MSE/MAPE) memakai evaluasi ramalan
-            // satu-langkah ke depan (in-sample): untuk tiap minggu t = 2..N,
-            // ramalan F_t = WMA dari minggu-minggu sebelumnya (bobot 1..t-1),
-            // lalu dibandingkan dengan aktual X_t yang sudah ada.
+            // satu-langkah ke depan (in-sample) dengan WMA orde 3:
+            // untuk tiap minggu t = 4..N, ramalan F_t dihitung dari
+            // 3 minggu sebelumnya, lalu dibandingkan dengan aktual X_t
+            // yang sudah ada. Tiga minggu pertama tidak bisa diramal ("-").
             // Ramalan minggu ke-(N+1) tidak ikut karena aktualnya belum ada.
             // MAD  = rata-rata |X - F| (semakin kecil semakin akurat)
             // MSE  = rata-rata (X - F)^2 (menghukum error besar)
             // MAPE = rata-rata |X - F| / X * 100% (X = 0 dilewati agar tidak bagi nol)
             $eval = [];
-            for ($t = 1; $t < $n; $t++) {
-                $totalBobotEval = 0;
-                $totalBerbobotEval = 0;
-                for ($j = 0; $j < $t; $j++) {
-                    $bobotEval = $j + 1;
-                    $totalBobotEval += $bobotEval;
-                    $totalBerbobotEval += $bobotEval * $weeklyData[$j];
-                }
+            for ($t = 3; $t < $n; $t++) {
                 $eval[] = [
                     'x' => $weeklyData[$t],
-                    'f' => $totalBobotEval > 0 ? $totalBerbobotEval / $totalBobotEval : 0,
+                    'f' => ($weeklyData[$t - 3] + 2 * $weeklyData[$t - 2] + 3 * $weeklyData[$t - 1]) / 6,
                 ];
             }
 
@@ -593,12 +574,13 @@ class PrediksiPenjualan extends Component
     {
         $analisis = $this->dataAnalisis();
         $data = $analisis['data'];
+        $orde = min(3, $analisis['n']);
 
         foreach ($data as $item) {
             MovingAverage::updateOrCreate(
                 [
                     'id_produk' => $item['produk']->id,
-                    'periode' => $analisis['n'],
+                    'periode' => $orde,
                     'tgl_hitung' => now()->format('Y-m-d'),
                 ],
                 [

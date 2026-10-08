@@ -151,11 +151,13 @@
 
     {{-- Info --}}
     <div class="info">
-        Periode analisis: <strong>{{ $jumlahPeriode }} minggu terakhir</strong>
-        ({{ $startDate->format('d/m/Y') }} — {{ $endDate->format('d/m/Y') }})
         @if(!empty($isManual ?? false))
-            <br><span style="font-size: 10px;">Periode pilihan manual (Dari–Sampai Minggu).</span>
-        @elseif(!empty($isFallback ?? false))
+            Periode analisis: <strong>pilihan manual ({{ $jumlahPeriode }} minggu)</strong>
+        @else
+            Periode analisis: <strong>seluruh data penjualan ({{ $jumlahPeriode }} minggu)</strong>
+        @endif
+        ({{ $startDate->format('d/m/Y') }} — {{ $endDate->format('d/m/Y') }})
+        @if(!empty($isFallback ?? false))
             <br><span style="font-size: 10px;">Tidak ada penjualan pada minggu-minggu terakhir, sehingga
                 ditampilkan {{ $jumlahPeriode }} minggu dengan penjualan terbanyak.</span>
         @endif
@@ -163,78 +165,67 @@
 
     {{-- Formula --}}
     <div class="formula-box">
-        <strong>Rumus:</strong> WMA = (1·X₁ + 2·X₂ + ... + N·Xₙ) / (1 + 2 + ... + N) &nbsp;&mdash;&nbsp;
-        X = qty penjualan per minggu, N = {{ $jumlahPeriode }} periode (minggu terbaru bobot terbesar).
+        <strong>Rumus:</strong> WMA = (1·X<sub>t-3</sub> + 2·X<sub>t-2</sub> + 3·X<sub>t-1</sub>) / 6 &nbsp;&mdash;&nbsp;
+        X = qty penjualan per minggu. Tiap minggu diramal dari <strong>3 minggu sebelumnya</strong>
+        (terbaru bobot 3). Tiga minggu pertama tidak bisa diramal.
         Hasil WMA = prediksi penjualan minggu berikutnya.
         <br>
-        <strong>Akurasi (evaluasi ramalan satu-langkah ke depan — tiap minggu diramal dari minggu-minggu sebelumnya):</strong>
+        <strong>Akurasi (evaluasi ramalan satu-langkah ke depan):</strong>
         MAD = Σ|Xₜ − Fₜ| / n &nbsp;·&nbsp;
         MSE = Σ(Xₜ − Fₜ)² / n &nbsp;·&nbsp;
         MAPE = Σ(|Xₜ − Fₜ| / Xₜ × 100%) / n &nbsp;&mdash;&nbsp;
         semakin kecil nilainya, semakin akurat hasil peramalan.
     </div>
 
-    {{-- Table --}}
-    <table class="main">
-        <thead>
-            <tr>
-                <th style="text-align: left; min-width: 120px;">Produk</th>
-                @foreach($weeks as $week)
-                    <th>{{ $week['label'] }}<br><span style="font-weight: 400; font-size: 7px;">{{ $week['range'] }}</span>
-                    </th>
-                @endforeach
-                <th class="th-ma">WMA</th>
-                <th class="th-mad">MAD</th>
-                <th class="th-mse">MSE</th>
-                <th class="th-mse">MAPE</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($data as $item)
-                <tr>
-                    <td class="produk">
-                        {{ $item['produk']->nama_produk }}
-                        @if($item['produk']->varian_rasa)
-                            <br><span
-                                style="font-weight: 400; color: #94a3b8; font-size: 8px;">{{ $item['produk']->varian_rasa }}</span>
-                        @endif
-                    </td>
-                    @foreach($item['weekly'] as $qty)
-                        <td>{{ $qty }}</td>
-                    @endforeach
-                    <td class="ma">{{ number_format($item['wma'], 1) }}</td>
-                    <td class="mad">{{ $item['mad'] === null ? '-' : number_format($item['mad'], 2) }}</td>
-                    <td class="mse">{{ $item['mse'] === null ? '-' : number_format($item['mse'], 2) }}</td>
-                    <td class="mse">{{ $item['mape'] === null ? '-' : number_format($item['mape'], 2).'%' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="{{ count($weeks) + 5 }}" style="text-align: center; padding: 20px; color: #94a3b8;">
-                        Tidak ada data produk.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{-- Calculation Detail Section --}}
-    @if($data->count() > 0)
-        <div style="margin-top: 16px; font-size: 9px; color: #555;">
-            <strong style="color: #111;">Detail Perhitungan:</strong>
-            @foreach($data as $item)
-                <div style="margin-top: 4px;">
-                    <strong>{{ $item['produk']->nama_produk }}:</strong>
-                    WMA = <strong
-                        style="color: #111;">{{ number_format($item['wma'], 2) }}</strong>
-                    &nbsp;|&nbsp; MAD = <strong
-                        style="color: #111;">{{ $item['mad'] === null ? '-' : number_format($item['mad'], 2) }}</strong>
-                    &nbsp;|&nbsp; MSE = <strong
-                        style="color: #111;">{{ $item['mse'] === null ? '-' : number_format($item['mse'], 2) }}</strong>
-                    &nbsp;|&nbsp; MAPE = <strong
-                        style="color: #111;">{{ $item['mape'] === null ? '-' : number_format($item['mape'], 2).'%' }}</strong>
-                </div>
-            @endforeach
+    {{-- Table per minggu untuk produk terpilih --}}
+    @if($tabel)
+        <div style="font-size: 12px; font-weight: 800; color: #111; margin-bottom: 8px;">
+            {{ $tabel['produk']->nama_produk }}
+            @if($tabel['produk']->varian_rasa)
+                <span style="font-weight: 400;">— {{ $tabel['produk']->varian_rasa }}</span>
+            @endif
         </div>
+        <table class="main">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Periode</th>
+                    <th>Aktual (Xt)</th>
+                    <th>WMA (St)</th>
+                    <th>Error</th>
+                    <th>MAD</th>
+                    <th>MSE</th>
+                    <th>MAPE (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($tabel['rows'] as $r)
+                    <tr>
+                        <td style="text-align: left; font-weight: 600;">{{ $r['label'] }}<br><span
+                                style="font-weight: 400; font-size: 7px;">{{ $r['range'] }}</span></td>
+                        <td>{{ number_format($r['aktual'], 0, ',', '.') }}</td>
+                        <td>
+                            @if($r['prediksi'] === null)
+                                -
+                            @else
+                                <strong>{{ number_format($r['prediksi'], 2, ',', '.') }}</strong>
+                            @endif
+                        </td>
+                        <td>{{ $r['error'] === null ? '-' : number_format($r['error'], 2, ',', '.') }}</td>
+                        <td>{{ $r['abs'] === null ? '-' : number_format($r['abs'], 2, ',', '.') }}</td>
+                        <td>{{ $r['sq'] === null ? '-' : number_format($r['sq'], 2, ',', '.') }}</td>
+                        <td>{{ $r['pct'] === null ? '-' : number_format($r['pct'], 2, ',', '.').'%' }}</td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td colspan="4" style="text-align: right; font-weight: 700;">Rata-rata error</td>
+                    <td style="font-weight: 700;">{{ $tabel['mad'] === null ? '-' : number_format($tabel['mad'], 2, ',', '.') }}</td>
+                    <td style="font-weight: 700;">{{ $tabel['mse'] === null ? '-' : number_format($tabel['mse'], 2, ',', '.') }}</td>
+                    <td style="font-weight: 700;">{{ $tabel['mape'] === null ? '-' : number_format($tabel['mape'], 2, ',', '.').'%' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @else
+        <div style="text-align: center; padding: 20px; color: #94a3b8;">Tidak ada data produk.</div>
     @endif
 
     {{-- Footer --}}

@@ -85,10 +85,10 @@
                 <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 4px;">
                     Rumus Weighted Moving Average</div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                    <strong>WMA = (1·X₁ + 2·X₂ + ... + N·Xₙ) / (1 + 2 + ... + N)</strong> — di mana
-                    <strong>X</strong> = data penjualan per minggu, <strong>N</strong> = jumlah periode. Minggu terbaru
-                    diberi bobot terbesar. Hasil WMA digunakan sebagai prediksi penjualan
-                    untuk periode berikutnya.
+                    <strong>WMA = (1·X<sub>t-3</sub> + 2·X<sub>t-2</sub> + 3·X<sub>t-1</sub>) / 6</strong> — di mana
+                    <strong>X</strong> = data penjualan per minggu. Ramalan tiap minggu dihitung dari
+                    <strong>3 minggu sebelumnya</strong> (terbaru bobot 3). Hasil WMA digunakan sebagai
+                    prediksi penjualan untuk minggu berikutnya.
                 </div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
                     <strong>MAD = Σ|X<sub>t</sub> − F<sub>t</sub>| / n</strong> ·
@@ -106,14 +106,7 @@
     {{-- Filter Bar --}}
     <div class="modern-card mb-4" style="padding: 1rem 1.25rem;">
         <div class="row g-2 align-items-end">
-            <div class="col-md-2">
-                <label class="form-label"
-                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Jumlah
-                    Periode (N)</label>
-                <input type="number" class="form-control" wire:model.live.debounce.500ms="jumlahPeriode" min="2"
-                    max="12" placeholder="4" title="N minggu terakhir (otomatis)">
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <label class="form-label"
                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Dari
                     Minggu</label>
@@ -125,7 +118,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <label class="form-label"
                     style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Sampai
                     Minggu</label>
@@ -172,6 +165,8 @@
                     {{ $startDate->copy()->addWeeks($nAktif)->subDay()->format('d/m/Y') }}
                     @if ($isManual)
                         <span style="font-weight: 700;">(manual)</span>
+                    @else
+                        <span style="font-weight: 700;">(seluruh data)</span>
                     @endif
                 </div>
             </div>
@@ -201,8 +196,8 @@
             <div class="alert alert-modern mt-3 mb-0"
                 style="background: rgba(99,102,241,0.08); color: var(--text-primary); border: 1px solid rgba(99,102,241,0.25); border-radius: 12px; padding: 0.85rem 1.1rem; font-size: 0.82rem;">
                 <i class="fas fa-history me-2" style="color: var(--primary-color);"></i>
-                Tidak ada penjualan pada {{ $jumlahPeriode }} minggu terakhir, jadi grafik menampilkan
-                {{ $jumlahPeriode }} minggu dengan penjualan terbanyak
+                Tidak ada penjualan pada {{ $nAktif }} minggu terakhir, jadi grafik menampilkan
+                {{ $nAktif }} minggu dengan penjualan terbanyak
                 ({{ $startDate->format('d/m/Y') }} – {{ $endDate->format('d/m/Y') }}).
             </div>
         @elseif ($totalTerjualPeriode <= 0)
@@ -306,7 +301,7 @@
                         <tr>
                             <th style="padding: 0.85rem 1rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); white-space: nowrap;">Tanggal</th>
                             <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">Aktual (Xt)</th>
-                            <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">Prediksi (WMA)</th>
+                            <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">WMA (St)</th>
                             <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">Error</th>
                             <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">MAD</th>
                             <th style="padding: 0.85rem 0.75rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); text-align: right; white-space: nowrap;">MSE</th>
@@ -326,7 +321,6 @@
                                         <span style="color: var(--text-muted);">-</span>
                                     @else
                                         <span class="badge-modern" style="background: rgba(245,158,11,0.9); color: white; font-size: 0.85rem; font-weight: 700;">{{ number_format($r['prediksi'], 2, ',', '.') }}</span>
-                                        <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">Rumus: ({{ $r['rumus'] }})</div>
                                     @endif
                                 </td>
                                 <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; font-size: 0.85rem;">{{ $r['error'] === null ? '-' : number_format($r['error'], 2, ',', '.') }}</td>
@@ -341,22 +335,6 @@
                                 </td>
                             </tr>
                         @endforeach
-                        {{-- Baris ramalan minggu berikutnya --}}
-                        <tr style="background: rgba(99,102,241,0.05); border-bottom: 1px solid var(--border-light);">
-                            <td style="padding: 0.85rem 1rem; vertical-align: middle;">
-                                <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-color);">{{ $nextMinggu['label'] }} (Prediksi)</div>
-                                <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $nextMinggu['range'] }}</div>
-                            </td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; color: var(--text-muted);">-</td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle;">
-                                <span class="badge-modern" style="background: rgba(245,158,11,0.9); color: white; font-size: 0.85rem; font-weight: 700;">{{ number_format($tabel['wma'], 2, ',', '.') }}</span>
-                                <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">Rumus: ({{ $tabel['rumusBerikutnya'] }})</div>
-                            </td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; color: var(--text-muted);">-</td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; color: var(--text-muted);">-</td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; color: var(--text-muted);">-</td>
-                            <td style="padding: 0.85rem 0.75rem; text-align: right; vertical-align: middle; color: var(--text-muted);">-</td>
-                        </tr>
                         {{-- Baris ringkasan akurasi --}}
                         <tr style="background: var(--bg-tertiary); font-weight: 700;">
                             <td colspan="4" style="padding: 0.85rem 1rem; font-size: 0.82rem; text-transform: uppercase; color: var(--text-secondary);">Rata-rata error (MAD / MSE / MAPE)</td>
