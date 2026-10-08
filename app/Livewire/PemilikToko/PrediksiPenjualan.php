@@ -46,22 +46,56 @@ class PrediksiPenjualan extends Component
     }
 
     /**
+     * Batas tanggal penjualan kasir (min/max). Bila $idProduk diisi,
+     * hanya transaksi yang memuat produk tersebut.
+     *
+     * @return array{0: mixed, 1: mixed}
+     */
+    private function batasKasir(?int $idProduk = null): array
+    {
+        $q = PenjualanKasir::query();
+        if ($idProduk) {
+            $q->whereHas('items', fn ($qq) => $qq->where('id_produk', $idProduk));
+        }
+
+        return [$q->min('tanggal'), $q->max('tanggal')];
+    }
+
+    /**
+     * Batas tanggal penjualan reseller selesai (min/max). Bila $idProduk
+     * diisi, hanya pesanan yang memuat produk tersebut.
+     *
+     * @return array{0: mixed, 1: mixed}
+     */
+    private function batasReseller(?int $idProduk = null): array
+    {
+        $q = Transaksi::query()
+            ->whereHas('pesanan', fn ($qq) => $qq->where('status', StatusPesanan::SELESAI->value));
+        if ($idProduk) {
+            $q->whereHas('pesanan.itemPesanan', fn ($qq) => $qq->where('id_produk', $idProduk));
+        }
+
+        return [$q->min('tanggal'), $q->max('tanggal')];
+    }
+
+    /**
      * Rentang primer: SELURUH riwayat penjualan — mulai minggu penjualan
-     * paling lama sampai minggu penjualan terbaru (jangkar). Tidak ada
-     * batasan N minggu agar semua data ikut dihitung.
+     * paling lama sampai minggu penjualan terbaru (jangkar). Bila produk
+     * dipilih, rentang mengikuti riwayat produk tersebut sehingga tabel
+     * langsung bersih tanpa harus memilih manual. Tidak ada batasan N
+     * minggu agar semua data ikut dihitung.
      *
      * @return array{0: Carbon, 1: Carbon} [startDate, endDate]
      */
-    private function rentangPrimer(): array
+    private function rentangPrimer(?int $idProduk = null): array
     {
-        $terlamaKasir = PenjualanKasir::min('tanggal');
-        $terlamaReseller = Transaksi::query()
-            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-            ->min('tanggal');
-        $terakhirKasir = PenjualanKasir::max('tanggal');
-        $terakhirReseller = Transaksi::query()
-            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-            ->max('tanggal');
+        [$terlamaKasir, $terakhirKasir] = $this->batasKasir($idProduk);
+        [$terlamaReseller, $terakhirReseller] = $this->batasReseller($idProduk);
+
+        // Produk tanpa penjualan sama sekali: pakai rentang global.
+        if (! $terlamaKasir && ! $terlamaReseller && $idProduk) {
+            return $this->rentangPrimer(null);
+        }
 
         $kandidatAwal = collect([$terlamaKasir, $terlamaReseller])->filter();
 
@@ -100,16 +134,9 @@ class PrediksiPenjualan extends Component
      */
     public function getDaftarMingguTersediaProperty(): array
     {
-        $batas = collect([
-            PenjualanKasir::min('tanggal'),
-            Transaksi::query()
-                ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-                ->min('tanggal'),
-            PenjualanKasir::max('tanggal'),
-            Transaksi::query()
-                ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-                ->max('tanggal'),
-        ])->filter();
+        [$minKasir, $maxKasir] = $this->batasKasir();
+        [$minReseller, $maxReseller] = $this->batasReseller();
+        $batas = collect([$minKasir, $minReseller, $maxKasir, $maxReseller])->filter();
 
         if ($batas->isEmpty()) {
             return [];
@@ -173,7 +200,17 @@ class PrediksiPenjualan extends Component
             ];
         }
 
-        [$start, $end] = $this->rentangPrimer();
+        // Mode otomatis mengikuti produk terpilih: rentang = riwayat
+        // penjualan produk tersebut, sehingga tabel langsung bersih.
+        $produkId = $this->tabelProdukId ? (int) $this->tabelProdukId : null;
+        if ($produkId && ! Produk::where('id', $produkId)->exists()) {
+            $produkId = null;
+        }
+        if (! $produkId) {
+            $produkId = Produk::orderBy('nama_produk')->value('id');
+        }
+
+        [$start, $end] = $this->rentangPrimer($produkId);
         // N = seluruh minggu dalam rentang (tanpa batasan).
         $n = $start->copy()->diffInWeeks($end->copy()->startOfWeek()) + 1;
         $data = $this->hitungDataMingguan($start, $end, $n);
@@ -238,14 +275,8 @@ class PrediksiPenjualan extends Component
      */
     private function jendelaDataTerbanyak(int $n): ?array
     {
-        $kasirMin = PenjualanKasir::min('tanggal');
-        $resellerMin = Transaksi::query()
-            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-            ->min('tanggal');
-        $kasirMax = PenjualanKasir::max('tanggal');
-        $resellerMax = Transaksi::query()
-            ->whereHas('pesanan', fn ($q) => $q->where('status', StatusPesanan::SELESAI->value))
-            ->max('tanggal');
+        [$kasirMin, $kasirMax] = $this->batasKasir();
+        [$resellerMin, $resellerMax] = $this->batasReseller();
 
         $batas = collect([$kasirMin, $resellerMin, $kasirMax, $resellerMax])->filter();
         if ($batas->isEmpty()) {

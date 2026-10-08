@@ -166,7 +166,7 @@
                     @if ($isManual)
                         <span style="font-weight: 700;">(manual)</span>
                     @else
-                        <span style="font-weight: 700;">(seluruh data)</span>
+                        <span style="font-weight: 700;">(otomatis)</span>
                     @endif
                 </div>
             </div>
