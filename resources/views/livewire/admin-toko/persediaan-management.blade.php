@@ -64,7 +64,10 @@
                                     <div style="color: var(--text-primary);">
                                         {{ $persediaan->tgl_exp->format('d/m/Y') }}
                                     </div>
-                                    <small class="text-muted">Sisa {{ $persediaan->sisa_hari }} hari</small>
+                                    <small class="text-muted">
+                                        Sisa {{ $persediaan->sisa_hari }} hari
+                                        · peringatan {{ $persediaan->produk->batas_peringatan_exp }} hari
+                                    </small>
                                 @else
                                     <span style="color: var(--text-secondary);">-</span>
                                 @endif

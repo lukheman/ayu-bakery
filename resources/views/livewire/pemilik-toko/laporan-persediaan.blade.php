@@ -217,6 +217,9 @@
                             <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary-color);">
                                 <i class="fas fa-cubes me-1"></i>Stok: {{ $produk->stok_text }}
                             </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                <i class="fas fa-bell me-1"></i>Notifikasi: {{ $produk->batas_peringatan_exp }} hari sebelum expired
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -260,7 +263,7 @@
                                     <td>
                                         @if($batch->sisa_hari !== null)
                                             <span
-                                                style="font-weight: 600; {{ $batch->sisa_hari <= 3 ? 'color: var(--danger-color);' : ($batch->sisa_hari <= 14 ? 'color: var(--warning-color);' : 'color: var(--success-color);') }}">
+                                                style="font-weight: 600; {{ $batch->sisa_hari < 0 ? 'color: var(--danger-color);' : ($batch->sisa_hari <= $produk->batas_peringatan_exp ? 'color: var(--warning-color);' : 'color: var(--success-color);') }}">
                                                 {{ $batch->sisa_hari }} hari
                                             </span>
                                         @else

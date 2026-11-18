@@ -44,6 +44,7 @@
                         <th>Varian</th>
                         <th>Harga Jual</th>
                         <th>Unit</th>
+                        <th>Notifikasi Expired</th>
                         <th style="width: 120px;">Aksi</th>
                     </tr>
                 </thead>
@@ -73,6 +74,11 @@
                             </td>
                             <td>
                                 <div style="color: var(--text-secondary);">{{ $produk->unit ?? '-' }}</div>
+                            </td>
+                            <td>
+                                <div style="color: var(--text-secondary);">
+                                    <i class="fas fa-bell me-1"></i>{{ $produk->batas_peringatan_exp }} hari sebelum expired
+                                </div>
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -167,6 +173,25 @@
                         @error('varian_rasa')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="batas_peringatan_exp" class="form-label">
+                            Notifikasi Expired <span style="color: var(--danger-color);">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="number"
+                                class="form-control @error('batas_peringatan_exp') is-invalid @enderror"
+                                id="batas_peringatan_exp" wire:model="batas_peringatan_exp" min="0" max="365">
+                            <span class="input-group-text" style="background: var(--input-bg); border-color: var(--border-color);">hari sebelum expired</span>
+                        </div>
+                        @error('batas_peringatan_exp')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">
+                            Peringatan "Hampir Expired" muncul saat sisa umur produk mencapai batas ini.
+                            Contoh: pizza 1 hari, roti 3 hari.
+                        </small>
                     </div>
 
                     <div class="mb-3">

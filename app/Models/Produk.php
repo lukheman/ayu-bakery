@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusExp;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Produk extends Model
 {
     use HasFactory;
+
+    public const BATAS_PERINGATAN_EXP_DEFAULT = 3;
 
     protected $table = 'produk';
 
@@ -20,9 +23,17 @@ class Produk extends Model
         'harga_jual',
         'harga_jual_satuan',
         'unit',
+        'batas_peringatan_exp',
         'deskripsi',
         'gambar',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'batas_peringatan_exp' => 'integer',
+        ];
+    }
 
     public function persediaan(): HasMany
     {
@@ -57,6 +68,41 @@ class Produk extends Model
     public function getStokTextAttribute()
     {
         return $this->total_stok.' '.($this->unit ?? 'pcs');
+    }
+
+    public function hitungStatusExp(int $sisaHari): StatusExp
+    {
+        return self::statusExpUntukSisaHari($sisaHari, $this->batas_peringatan_exp);
+    }
+
+    public static function statusExpUntukSisaHari(int $sisaHari, ?int $batasPeringatanHari = null): StatusExp
+    {
+        $batasPeringatanHari ??= self::BATAS_PERINGATAN_EXP_DEFAULT;
+
+        if ($sisaHari < 0) {
+            return StatusExp::EXPIRED;
+        }
+
+        if ($sisaHari <= max(0, $batasPeringatanHari)) {
+            return StatusExp::HAMPIR_EXP;
+        }
+
+        return StatusExp::AMAN;
+    }
+
+    public function sinkronkanStatusPersediaan(): void
+    {
+        $this->persediaan()->whereNotNull('tgl_exp')->get()->each(function (Persediaan $persediaan): void {
+            $sisaHari = (int) ceil(now()->startOfDay()->diffInDays(Carbon::parse($persediaan->tgl_exp)->startOfDay(), false));
+            $status = $this->hitungStatusExp($sisaHari);
+
+            if ($persediaan->sisa_hari !== $sisaHari || $persediaan->status_exp !== $status) {
+                $persediaan->update([
+                    'sisa_hari' => $sisaHari,
+                    'status_exp' => $status,
+                ]);
+            }
+        });
     }
 
     public function getNearestExpiryAttribute(): ?array

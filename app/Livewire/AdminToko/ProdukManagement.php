@@ -30,6 +30,8 @@ class ProdukManagement extends Component
 
     public string $unit = '';
 
+    public int $batas_peringatan_exp = Produk::BATAS_PERINGATAN_EXP_DEFAULT;
+
     public string $deskripsi = '';
 
     public $gambar;
@@ -53,6 +55,7 @@ class ProdukManagement extends Component
             'varian_rasa' => ['nullable', 'string', 'max:255'],
             'harga_jual' => ['required', 'integer', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
+            'batas_peringatan_exp' => ['required', 'integer', 'min:0', 'max:365'],
             'gambar' => ['nullable', 'image', 'max:2048'],
         ];
 
@@ -70,6 +73,10 @@ class ProdukManagement extends Component
         'kode_produk.required' => 'Kode produk harus diisi.',
         'kode_produk.unique' => 'Kode produk sudah digunakan.',
         'harga_jual.required' => 'Harga jual harus diisi.',
+        'batas_peringatan_exp.required' => 'Batas peringatan expired harus diisi.',
+        'batas_peringatan_exp.integer' => 'Batas peringatan expired harus berupa angka.',
+        'batas_peringatan_exp.min' => 'Batas peringatan expired tidak boleh negatif.',
+        'batas_peringatan_exp.max' => 'Batas peringatan expired maksimal 365 hari.',
         'gambar.image' => 'File harus berupa gambar.',
         'gambar.max' => 'Ukuran gambar maksimal 2MB.',
     ];
@@ -100,6 +107,7 @@ class ProdukManagement extends Component
         $this->varian_rasa = $produk->varian_rasa ?? '';
         $this->harga_jual = $produk->harga_jual;
         $this->unit = $produk->unit ?? '';
+        $this->batas_peringatan_exp = $produk->batas_peringatan_exp ?? Produk::BATAS_PERINGATAN_EXP_DEFAULT;
         $this->deskripsi = $produk->deskripsi ?? '';
         $this->gambar = null;
         $this->showModal = true;
@@ -115,6 +123,7 @@ class ProdukManagement extends Component
             'varian_rasa' => $validated['varian_rasa'] ?: null,
             'harga_jual' => $validated['harga_jual'],
             'unit' => $validated['unit'],
+            'batas_peringatan_exp' => $validated['batas_peringatan_exp'],
             // 'deskripsi' => $validated['deskripsi'] ?: null,
         ];
 
@@ -130,6 +139,7 @@ class ProdukManagement extends Component
         if ($this->editingProdukId) {
             $produk = Produk::findOrFail($this->editingProdukId);
             $produk->update($data);
+            $produk->sinkronkanStatusPersediaan();
             session()->flash('success', 'Produk berhasil diperbarui.');
         } else {
             Produk::create($data);
@@ -195,6 +205,7 @@ class ProdukManagement extends Component
         $this->varian_rasa = '';
         $this->harga_jual = 0;
         $this->unit = '';
+        $this->batas_peringatan_exp = Produk::BATAS_PERINGATAN_EXP_DEFAULT;
         $this->deskripsi = '';
         $this->gambar = null;
         $this->currentGambar = null;

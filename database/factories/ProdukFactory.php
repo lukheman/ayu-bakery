@@ -43,6 +43,7 @@ class ProdukFactory extends Factory
             'harga_jual' => $hargaJual,
             'harga_jual_satuan' => $hargaJual,
             'unit' => $produk['unit'],
+            'batas_peringatan_exp' => Produk::BATAS_PERINGATAN_EXP_DEFAULT,
             'deskripsi' => 'Produk '.$produk['nama'].' rasa '.$produk['rasa'].' dari Ayu Bakery',
             'gambar' => null,
         ];

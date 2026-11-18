@@ -59,11 +59,18 @@
                                         <i class="fas fa-boxes me-1"></i>{{ $produk->stok_text }}
                                     </span>
                                     @if($produk->nearest_expiry)
-                                        <div style="font-size: 0.62rem; color: var(--pos-text-muted); margin-top: 3px; line-height: 1.2;">
+                                        @php
+                                            $sisaHariExp = $produk->nearest_expiry['sisa_hari'];
+                                            $hampirExpired = $sisaHariExp !== null && $sisaHariExp >= 0 && $sisaHariExp <= $produk->batas_peringatan_exp;
+                                        @endphp
+                                        <div style="font-size: 0.62rem; color: {{ $hampirExpired ? '#f59e0b' : 'var(--pos-text-muted)' }}; margin-top: 3px; line-height: 1.2; {{ $hampirExpired ? 'font-weight: 600;' : '' }}">
                                             <i class="fas fa-calendar-times me-1"></i>
                                             Exp {{ $produk->nearest_expiry['date'] }}
-                                            @if($produk->nearest_expiry['sisa_hari'] !== null)
-                                                · {{ $produk->nearest_expiry['sisa_hari'] }} hari lagi
+                                            @if($sisaHariExp !== null)
+                                                · {{ $sisaHariExp }} hari lagi
+                                            @endif
+                                            @if($hampirExpired)
+                                                · hampir expired
                                             @endif
                                         </div>
                                     @endif

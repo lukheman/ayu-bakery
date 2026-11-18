@@ -2,6 +2,7 @@
 
 use App\Enums\StatusExp;
 use App\Models\Persediaan;
+use App\Models\Produk;
 use Carbon\Carbon;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -12,7 +13,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::call(function () {
-    $persediaans = Persediaan::whereNotNull('tgl_exp')->get();
+    $persediaans = Persediaan::with('produk')->whereNotNull('tgl_exp')->get();
     $now = Carbon::now()->startOfDay();
 
     foreach ($persediaans as $persediaan) {
@@ -20,13 +21,9 @@ Schedule::call(function () {
         $sisaHari = $now->diffInDays($tglExp, false);
         $sisaHariRounded = (int) ceil($sisaHari);
 
-        if ($sisaHariRounded > 3) {
-            $status = StatusExp::AMAN->value;
-        } elseif ($sisaHariRounded >= 0) {
-            $status = StatusExp::HAMPIR_EXP->value;
-        } else {
-            $status = StatusExp::EXPIRED->value;
-        }
+        $status = $persediaan->produk
+            ? $persediaan->produk->hitungStatusExp($sisaHariRounded)->value
+            : Produk::statusExpUntukSisaHari($sisaHariRounded)->value;
 
         if ($status === StatusExp::EXPIRED->value || $sisaHariRounded < 0) {
             $persediaan->delete();

@@ -87,13 +87,10 @@ class PersediaanManagement extends Component
         $sisaHari = $now->diffInDays($tglExp, false);
         $sisaHariRounded = (int) ceil($sisaHari);
 
-        if ($sisaHariRounded > 3) {
-            $status = StatusExp::AMAN;
-        } elseif ($sisaHariRounded >= 0) {
-            $status = StatusExp::HAMPIR_EXP;
-        } else {
-            $status = StatusExp::EXPIRED;
-        }
+        $produk = $this->id_produk ? Produk::find($this->id_produk) : null;
+        $status = $produk
+            ? $produk->hitungStatusExp($sisaHariRounded)
+            : Produk::statusExpUntukSisaHari($sisaHariRounded);
 
         return ['sisa_hari' => $sisaHariRounded, 'status_exp' => $status];
     }
@@ -169,7 +166,7 @@ class PersediaanManagement extends Component
 
     protected function hapusPersediaanExpired(): void
     {
-        $persediaans = Persediaan::whereNotNull('tgl_exp')->get();
+        $persediaans = Persediaan::with('produk')->whereNotNull('tgl_exp')->get();
         $now = Carbon::now()->startOfDay();
 
         foreach ($persediaans as $persediaan) {
@@ -182,13 +179,9 @@ class PersediaanManagement extends Component
                 $persediaan->delete();
             } else {
                 // Update status agar selalu real-time
-                if ($sisaHariRounded > 3) {
-                    $status = StatusExp::AMAN;
-                } elseif ($sisaHariRounded >= 0) {
-                    $status = StatusExp::HAMPIR_EXP;
-                } else {
-                    $status = StatusExp::EXPIRED;
-                }
+                $status = $persediaan->produk
+                    ? $persediaan->produk->hitungStatusExp($sisaHariRounded)
+                    : Produk::statusExpUntukSisaHari($sisaHariRounded);
 
                 if ($status === StatusExp::EXPIRED) {
                     $persediaan->delete();
